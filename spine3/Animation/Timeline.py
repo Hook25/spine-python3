@@ -55,6 +55,7 @@ class CurveTimeline(Timeline):
     def getCurvePercent(self, keyframeIndex, percent):
         curveIndex = keyframeIndex * self.FRAME_SPACING
         curveIndex = keyframeIndex * 6
+        curveIndex = int(curveIndex)
         dfx = self.curves[curveIndex]
         if dfx == self.LINEAR:
             return percent

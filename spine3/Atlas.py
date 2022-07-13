@@ -1,8 +1,6 @@
-import itertools, collections
 import os
-
-
-from .. import Enum
+from pathlib import Path
+from enum import IntEnum
 
 formatNames = ('Alpha', 
                'Intensity',
@@ -20,65 +18,36 @@ textureFiltureNames = ('Nearest',
                        'MipMapNearestLinear', 
                        'MipMapLinearLinear')
 
-class AtlasPage(object):
-    def __init__(self):
-        super(AtlasPage, self).__init__()
-        self.name = None
-        self.format = None
-        self.minFilter = None
-        self.magFilter = None
-        self.uWrap = None
-        self.vWrap = None
 
+class Format(IntEnum):
+    alpha=0
+    intensity=1
+    luminanceAlpha=2
+    rgb565=3
+    rgba4444=4
+    rgb888=5
+    rgba8888=6
 
-class AtlasRegion(object):
-    def __init__(self):
-        super(AtlasRegion, self).__init__()
-        self.name = None
-        self.x = 0
-        self.y = 0
-        self.width = 0
-        self.height = 0
-        self.offsetX = 0.0
-        self.offsetY = 0.0
-        self.originalWidth = 0
-        self.originalHeight = 0
-        self.index = 0
-        self.rotate = False
-        self.flip = False
-        self.splits = []
-        self.pads = []
+class TextureFilter(IntEnum):
+    nearest=0
+    linear=1
+    mipMap=2
+    mipMapNearestNearest=3
+    mipMapLinearNearest=4
+    mipMapNearestLinear=5
+    mipMapLinearLinear=6
 
+class TextureWrap(IntEnum):
+    mirroredRepeat=0
+    clampToEdge=1
+    repeat=2
 
-Format = Enum.enum(alpha=0,
-                   intensity=1,
-                   luminanceAlpha=2,
-                   rgb565=3,
-                   rgba4444=4,
-                   rgb888=5,
-                   rgba8888=6)
-
-
-TextureFilter = Enum.enum(nearest=0,
-                          linear=1,
-                          mipMap=2,
-                          mipMapNearestNearest=3,
-                          mipMapLinearNearest=4,
-                          mipMapNearestLinear=5,
-                          mipMapLinearLinear=6)
-
-
-TextureWrap = Enum.enum(mirroredRepeat=0,
-                        clampToEdge=1,
-                        repeat=2)
-
-
-class Atlas(object):
-    def __init__(self):
-        super(Atlas, self).__init__()
+class Atlas:
+    def __init__(self, file : Path):
         self.pages = []
         self.regions = []
-
+        self.file_loc = (file.parent.parent)
+        self.loadWithFile(file)
 
     def loadWithFile(self, file):
         if not file:
@@ -177,19 +146,48 @@ class Atlas(object):
                         _region = {}
                         continue
 
-    
     def findRegion(self, name):
         for region in self.regions:
             if region.name == name:
                 return region
         return None
 
-    
     def newAtlasPage(self, name):
-        pass
-
+        import pygame
+        page = AtlasPage()
+        img_path = self.file_loc / name
+        page.texture = pygame.image.load(img_path.resolve()).convert_alpha()
+        return page
 
     def newAtlasRegion(self, page):
-        pass
+        region = AtlasRegion()
+        region.page = page
+        return region
 
+class AtlasRegion:
+    def __init__(self):
+        self.name = None
+        self.x = 0
+        self.y = 0
+        self.width = 0
+        self.height = 0
+        self.offsetX = 0.0
+        self.offsetY = 0.0
+        self.originalWidth = 0
+        self.originalHeight = 0
+        self.index = 0
+        self.rotate = False
+        self.flip = False
+        self.splits = []
+        self.pads = []
+        self.page = None
 
+class AtlasPage:
+    def __init__(self):
+        self.name = None
+        self.format = None
+        self.minFilter = None
+        self.magFilter = None
+        self.uWrap = None
+        self.vWrap = None
+        self.texture = None

@@ -1,31 +1,69 @@
-import spine
+import math
 
-import pygame
+from . import Attachment
 
-class Color(object):
+class BaseRegionAttachment(Attachment.Attachment):
     def __init__(self):
-        super(Color, self).__init__()
-        self.r = 0.0
-        self.g = 0.0
-        self.b = 0.0
-        self.a = 0.0
+        super().__init__()
+        self.x = 0.0
+        self.y = 0.0
+        self.scaleX = 1.0
+        self.scaleY = 1.0
+        self.rotation = 0.0
+        self.width = 0.0
+        self.height = 0.0
+        self.offset = [0.0,
+                       0.0,
+                       0.0,
+                       0.0,
+                       0.0,
+                       0.0,
+                       0.0,
+                       0.0]
 
-class TextureCoordinates(object):
+    def updateOffset(self):
+        localX2 = self.width / 2.0
+        localY2 = self.height / 2.0
+        localX = -localX2
+        localY = -localY2
+        localX *= self.scaleX
+        localY *= self.scaleY
+        radians = math.radians(self.rotation)
+        cos = math.cos(radians)
+        sin = math.sin(radians)
+        localXCos = localX * cos + self.x
+        localXSin = localX * sin
+        localYCos = localY * cos + self.y
+        localYSin = localY * sin
+        localX2Cos = localX2 * cos + self.x
+        localX2Sin = localX2 * sin
+        localY2Cos = localY2 * cos + self.y
+        localY2Sin = localY2 * sin
+        self.offset[0] = localXCos - localYSin
+        self.offset[1] = localYCos + localXSin
+        self.offset[2] = localXCos - localY2Sin
+        self.offset[3] = localY2Cos + localXSin
+        self.offset[4] = localX2Cos - localY2Sin
+        self.offset[5] = localY2Cos + localX2Sin
+        self.offset[6] = localX2Cos - localYSin
+        self.offset[7] = localYCos + localX2Sin
+
+class TextureCoordinates:
     def __init__(self):
-        super(TextureCoordinates, self).__init__()
         self.x = 0.0
         self.y = 0.0
 
-class Vertex(object):
+class ColoredVertex:
     def __init__(self):
-        super(Vertex, self).__init__()
-        self.color = Color()
+        import pygame
+        self.color = pygame.Color(0, 0, 0, 0)
         self.texCoords = TextureCoordinates()
 
-class RegionAttachment(spine.RegionAttachment.RegionAttachment):
+class PyGameRegionAttachment(BaseRegionAttachment):
     def __init__(self, region):
-        super(RegionAttachment, self).__init__()
-        self.verticies = [Vertex(), Vertex(), Vertex(), Vertex()]
+        import pygame
+        super().__init__()
+        self.verticies = [ColoredVertex(), ColoredVertex(), ColoredVertex(), ColoredVertex()]
         self.u = region.x
         self.u2 = self.u + region.width
         self.v = region.y
@@ -53,7 +91,6 @@ class RegionAttachment(spine.RegionAttachment.RegionAttachment):
             self.verticies[3].texCoords.x = self.u2
             self.verticies[3].texCoords.y = self.v2
 
-    
     def draw(self, slot):
         skeleton = slot.skeleton
 
@@ -96,12 +133,12 @@ class RegionAttachment(spine.RegionAttachment.RegionAttachment):
         m01 = bone.m01
         m10 = bone.m10
         m11 = bone.m11
-        self.verticies[0].position.x = self.offset[0] * m00 + offset[1] * m01 + x
-        self.verticies[0].position.y = self.offset[0] * m10 + offset[1] * m11 + y
-        self.verticies[1].position.x = self.offset[2] * m00 + offset[3] * m01 + x
-        self.verticies[1].position.y = self.offset[2] * m10 + offset[3] * m11 + y
-        self.verticies[2].position.x = self.offset[4] * m00 + offset[5] * m01 + x
-        self.verticies[2].position.y = self.offset[4] * m10 + offset[5] * m11 + y
-        self.verticies[3].position.x = self.offset[6] * m00 + offset[7] * m01 + x
-        self.verticies[3].position.y = self.offset[6] * m10 + offset[7] * m11 + y
+        self.verticies[0].position.x = self.offset[0] * m00 + self.offset[1] * m01 + x
+        self.verticies[0].position.y = self.offset[0] * m10 + self.offset[1] * m11 + y
+        self.verticies[1].position.x = self.offset[2] * m00 + self.offset[3] * m01 + x
+        self.verticies[1].position.y = self.offset[2] * m10 + self.offset[3] * m11 + y
+        self.verticies[2].position.x = self.offset[4] * m00 + self.offset[5] * m01 + x
+        self.verticies[2].position.y = self.offset[4] * m10 + self.offset[5] * m11 + y
+        self.verticies[3].position.x = self.offset[6] * m00 + self.offset[7] * m01 + x
+        self.verticies[3].position.y = self.offset[6] * m10 + self.offset[7] * m11 + y
         

@@ -16,7 +16,7 @@ class SlotData(object):
         self.attachmentName = None
 
 
-    def setColor(r, g, b, a):
+    def setColor(self, r, g, b, a):
         self.r = r
         self.g = g
         self.b = b

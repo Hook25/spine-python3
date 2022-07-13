@@ -2,13 +2,13 @@ import json
 import os
 import sys
 
-import SkeletonData
-import BoneData
-import SlotData
-import Skin
-import AttachmentLoader
+from . import SkeletonData
+from . import BoneData
+from . import SlotData
+from . import Skin
+from . import AttachmentLoader
 
-import Animation
+from . import Animation
 
 
 def readCurve(timeline, keyframeIndex, valueMap):
@@ -245,7 +245,7 @@ class SkeletonJson(object):
                         timeline.setKeyframe(keyframeIndex, valueMap['time'], '' if not valueName else valueName)
                         keyframeIndex += 1
                     timelines.append(timeline)
-                    if timeline.getDuration > duration:
+                    if timeline.getDuration() > duration:
                         duration = timeline.getDuration()
                 else:
                     raise Exception('Invalid timeline type for a slot: %s (%s)' % (timelineName, slotName))

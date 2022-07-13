@@ -1,15 +1,14 @@
-from Bone import Bone
-from Slot import Slot
+import math
 
-class Skeleton(object):
+from .Bone import Bone
+from .Slot import Slot
+
+class Skeleton:
     def __init__(self, skeletonData):
-        super(Skeleton, self).__init__()
         self.data = skeletonData
         self.skin = None
-        self.r = 1.0
-        self.g = 1.0
-        self.b = 1.0
-        self.a = 1.0
+        self.x = 0
+        self.y = 0
         self.time = 0.0
         self.bones = []
         self.slots = []
@@ -18,7 +17,7 @@ class Skeleton(object):
         self.flipY = False
 
         if not self.data:
-            raise Exception('skeletonData can not be null.')
+            raise ValueError('skeletonData can not be null.')
 
         boneCount = len(self.data.bones)
         self.bones = [None] * boneCount
@@ -45,37 +44,78 @@ class Skeleton(object):
             self.slots[i] = slot
             self.drawOrder.append(slot)
     
-    
+    def draw(self, screen):
+        import pygame
+        drawable_slots = (slot for slot in self.drawOrder if slot.attachment and slot.attachment.texture)
+        to_draw = []
+        for slot in drawable_slots:
+            x = self.x + slot.bone.worldX + slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
+            y = self.y - (slot.bone.worldY + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
+
+            rotation = -(slot.bone.worldRotation + slot.attachment.rotation)
+
+            x_scale = slot.bone.worldScaleX + slot.attachment.scaleX - 1
+            y_scale = slot.bone.worldScaleY + slot.attachment.scaleY - 1
+
+            if self.flipX:
+                x_scale = -x_scale
+                rotation = -rotation
+            if self.flipY:
+                y_scale = -y_scale
+                rotation = -rotation
+
+            flipX = False
+            flipY = False
+
+            if x_scale < 0:
+                flipX = True
+                x_scale = math.fabs(x_scale)
+            if y_scale < 0:
+                flipY = True
+                y_scale = math.fabs(y_scale)
+            
+            texture : pygame.Surface = slot.attachment.texture
+            old_scale = texture.get_size()
+            act_scale = (
+                int(old_scale[0] * x_scale), 
+                int(old_scale[1] * y_scale)
+            )
+            texture = pygame.transform.flip(texture, flipX, flipY)
+            texture = pygame.transform.scale(texture, act_scale)
+            texture = pygame.transform.rotate(texture, -rotation)
+
+            # Center image
+            cx, cy = texture.get_rect().center
+            x -= cx
+            y -= cy
+            to_draw.append((texture, (x, y)))
+
+        screen.blits(to_draw)
+
     def updateWorldTransform(self):
         for i, bone in enumerate(self.bones):
             self.bones[i].updateWorldTransform(self.flipX, self.flipY)
 
-    
     def setToBindPose(self):
         self.setBonesToBindPose()
         self.setSlotsToBindPose()
 
-    
     def setBonesToBindPose(self):
         for i, bone in enumerate(self.bones):
             self.bones[i].setToBindPose()
 
-    
     def setSlotsToBindPose(self):
         for i, bone in enumerate(self.slots):
             self.slots[i].setToBindPoseWithIndex(i)
-
 
     def getRootBone(self):
         if len(self.bones):
             return self.bones[0]
         return None
 
-
     def setRootBone(self, bone):
         if len(self.bones):
             self.bones[0] = bone
-    
     
     def findBone(self, boneName):
         for i, bone in enumerate(self.bones):
@@ -83,13 +123,11 @@ class Skeleton(object):
                 return self.bones[i]
         return None
 
-    
     def findBoneIndex(self, boneName):
         for i, bone in enumerate(self.bones):
             if self.data.bones[i].name == boneName:
                 return i
         return -1
-
 
     def findSlot(self, slotName):
         for i, slot in enumerate(self.slots):
@@ -97,13 +135,11 @@ class Skeleton(object):
                 return self.slots[i]
         return None
 
-
     def findSlotIndex(self, slotName):
         for i, slot in enumerate(self.slots):
             if self.data.slots[i].name == slotName:
                 return i
         return -1
-
 
     def setSkin(self, skinName):
         skin = self.data.findSkin(skinName)
@@ -111,16 +147,13 @@ class Skeleton(object):
             raise Exception('Skin not found: %s' % skinName)
         self.setSkinToSkin(skin)
 
-
     def setSkinToSkin(self, newSkin):
         if self.skin and newSkin:
             newSkin.attachAll(self, self.skin)
         self.skin = newSkin
 
-
     def getAttachmentByName(self, slotName, attachmentName):
         return self.getAttachmentByIndex(self.data.findSlotIndex(slotName), attachmentName)
-
 
     def getAttachmentByIndex(self, slotIndex, attachmentName):
         if self.data.defaultSkin:
@@ -131,14 +164,12 @@ class Skeleton(object):
             return self.skin.getAttachment(slotIndex, attachmentName)
         return None
 
-
     def setAttachment(self, slotName, attachmentName):
         for i in range(len(self.slots)):
             if self.slots[i].data.name == slotName:
                 self.slots[i].setAttachment(self.getAttachmentByIndex(i, attachmentName))
                 return
         raise Exception('Slot not found: %s' % slotName)
-
 
     def update(self, delta):
         self.time += delta

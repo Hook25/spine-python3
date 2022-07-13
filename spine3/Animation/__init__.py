@@ -1,4 +1,4 @@
-import Timeline
+from . import Timeline
 
 class Animation(object):
     def __init__(self, name, timelines, duration):

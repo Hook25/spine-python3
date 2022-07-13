@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
 import os
-
 import pygame
-
-import pyguts.src as pyguts
-import spine 
-
-from common import get_asset
+import spine3 
+from .common import get_asset
 
 def main():
     pygame.init()
@@ -19,11 +15,13 @@ def main():
     caption = 'PyGuts - A Pygame front-end based on the python-spine Runtime'
     pygame.display.set_caption(caption, 'Spine Runtime')
 
-    atlas = pyguts.Atlas.Atlas(file=get_asset('dragon.atlas'))
-    skeletonJson = spine.SkeletonJson.SkeletonJson(pyguts.AtlasAttachmentLoader.AtlasAttachmentLoader(atlas))
+    print(get_asset('dragon.atlas'))
+
+    atlas = spine3.Atlas.Atlas(file=get_asset('dragon.atlas'))
+    skeletonJson = spine3.SkeletonJson.SkeletonJson(spine3.AttachmentLoader.AttachmentLoader(atlas))
     skeletonData = skeletonJson.readSkeletonDataFile(get_asset('dragon.json'))
 
-    skeleton = pyguts.Skeleton.Skeleton(skeletonData=skeletonData)
+    skeleton = spine3.Skeleton.Skeleton(skeletonData=skeletonData)
 
     flyingAnimation = skeletonData.findAnimation('flying')
     skeleton.debug = False
@@ -55,7 +53,7 @@ def main():
                               loop=True)
         skeleton.updateWorldTransform()
         screen.fill((0, 0, 0))
-        skeleton.draw(screen, 0)
+        skeleton.draw(screen)
         pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')
         pygame.display.flip()
     pygame.quit()
