@@ -1,40 +1,33 @@
 import os
-
-
 import pygame
-
-
 import spine
+from pathlib import Path
 
-class AtlasPage(spine.AtlasPage):
+class AtlasPage(spine.Atlas.AtlasPage):
     def __init__(self):
-        super(AtlasPage, self).__init__()
+        super().__init__()
         self.texture = None
 
-
-class AtlasRegion(spine.AtlasRegion):
+class AtlasRegion(spine.Atlas.AtlasRegion):
     def __init__(self):
-        super(AtlasRegion, self).__init__()
+        super().__init__()
         self.page = None
 
-
-class Atlas(spine.Atlas):
-    def __init__(self, file):
-        super(Atlas, self).__init__()
-        super(Atlas, self).loadWithFile(file)
-
-
+class Atlas(spine.Atlas.Atlas):
+    def __init__(self, file : Path):
+        super().__init__()
+        # file is dir/file
+        # get ../../ because paths are in the form dir/...
+        self.file_loc = (file.parent.parent)
+        super().loadWithFile(file)
     def newAtlasPage(self, name):
         page = AtlasPage()
-        page.texture = pygame.image.load(os.path.realpath(name)).convert_alpha()
+        img_path = self.file_loc / name
+        page.texture = pygame.image.load(img_path.resolve()).convert_alpha()
         return page
-
-
     def newAtlasRegion(self, page):
         region = AtlasRegion()
         region.page = page
         return region
-
-
     def findRegion(self, name):
-        return super(Atlas, self).findRegion(name)
+        return super().findRegion(name)

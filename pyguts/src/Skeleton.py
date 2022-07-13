@@ -1,21 +1,18 @@
 import math
-
 import spine
-
 import pygame
 
-class Circle(object):
+class Circle:
     def __init__(self, x, y, r):
-        super(Circle, self).__init__()
+        super().__init__()
         self.x = x
         self.y = y
         self.r = r
         self.color = (0, 255, 0, 255)
 
-
-class Line(object):
+class Line:
     def __init__(self, length):
-        super(Line, self).__init__()
+        super().__init__()
         self.x = 0.0
         self.y = 0.0
         self.x1 = 0.0
@@ -28,119 +25,56 @@ class Line(object):
 
 
     def rotate(self):
-        return pygame.transform.rotozoom(self.texture, self.rotation, self.xScale)
+        return pygame.transform.rotozoom(self.texture, self.rotation, self.x_scale)
 
-
-class Skeleton(spine.Skeleton):
+class Skeleton(spine.Skeleton.Skeleton):
     def __init__(self, skeletonData):
-        super(Skeleton, self).__init__(skeletonData=skeletonData)
+        super().__init__(skeletonData=skeletonData)
         self.x = 0
         self.y = 0
-        self.texture = None
-        self.debug = True
-        self.images = []
-        self.clock = None
+    def draw(self, screen : pygame.Surface, states):
+        drawable_slots = (slot for slot in self.drawOrder if slot.attachment and slot.attachment.texture)
+        to_draw = []
+        for slot in drawable_slots:
+            x = self.x + slot.bone.worldX + slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
+            y = self.y - (slot.bone.worldY + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
 
-    def draw(self, screen, states):
-        x = 0
-        y = 0
+            rotation = -(slot.bone.worldRotation + slot.attachment.rotation)
 
-        for slot in self.drawOrder:
-            if slot.attachment:
-                texture = slot.attachment.texture.copy()
-                if texture:
-                    x = slot.bone.worldX + slot.attachment.x  * slot.bone.m00 + slot.attachment.y * slot.bone.m01
-                    y = -(slot.bone.worldY + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
-                    rotation = -(slot.bone.worldRotation + slot.attachment.rotation)
-                    xScale = slot.bone.worldScaleX + slot.attachment.scaleX - 1
-                    yScale = slot.bone.worldScaleY + slot.attachment.scaleY - 1
+            x_scale = slot.bone.worldScaleX + slot.attachment.scaleX - 1
+            y_scale = slot.bone.worldScaleY + slot.attachment.scaleY - 1
 
-                    x += self.x
-                    y += self.y
+            if self.flipX:
+                x_scale = -x_scale
+                rotation = -rotation
+            if self.flipY:
+                y_scale = -y_scale
+                rotation = -rotation
 
-                    if self.flipX:
-                        xScale = -xScale
-                        rotation = -rotation
-                    if self.flipY:
-                        yScale = -yScale
-                        rotation = -rotation
+            flipX = False
+            flipY = False
 
-                    flipX = False
-                    flipY = False
+            if x_scale < 0:
+                flipX = True
+                x_scale = math.fabs(x_scale)
+            if y_scale < 0:
+                flipY = True
+                y_scale = math.fabs(y_scale)
+            
+            texture : pygame.Surface = slot.attachment.texture
+            old_scale = texture.get_size()
+            act_scale = (
+                int(old_scale[0] * x_scale), 
+                int(old_scale[1] * y_scale)
+            )
+            texture = pygame.transform.flip(texture, flipX, flipY)
+            texture = pygame.transform.scale(texture, act_scale)
+            texture = pygame.transform.rotate(texture, -rotation)
 
-                    if xScale < 0:
-                        flipX = True
-                        xScale = math.fabs(xScale)
-                    if yScale < 0:
-                        flipY = True
-                        yScale = math.fabs(yScale)
+            # Center image
+            cx, cy = texture.get_rect().center
+            x -= cx
+            y -= cy
+            to_draw.append((texture, (x, y)))
 
-                    
-                    texture.fill((slot.r, slot.g, slot.b, slot.a), None, pygame.BLEND_RGBA_MULT)
-
-                    center = texture.get_rect().center                    
-                    texture = pygame.transform.flip(texture, flipX, flipY)
-                    texture = pygame.transform.smoothscale(texture, (int(texture.get_width() * xScale), int(texture.get_height() * yScale)))
-                    texture = pygame.transform.rotozoom(texture, -rotation, 1)
-
-                    # Center image
-                    x = x - texture.get_width() / 2
-                    y = y - texture.get_height() / 2
-                    screen.blit(texture, (x, y))
-
-        if self.debug:
-            if not self.clock:
-                self.clock = pygame.time.Clock()
-            self.clock.tick()
-            # Draw the FPS in the bottom right corner.
-            pygame.font.init()
-            myfont = pygame.font.SysFont(None, 24, bold=True)
-            mytext = myfont.render('FPS: %.2f' % self.clock.get_fps(), True, (255, 255, 255))
-
-            screen.blit(mytext, (screen.get_width() - mytext.get_width(), screen.get_height() - mytext.get_height()))
-
-            for bone in self.bones:
-
-                if not bone.line:
-                    bone.line = Line(bone.data.length)
-                bone.line.x = bone.worldX + self.x
-                bone.line.y = -bone.worldY + self.y
-                bone.line.rotation = -bone.worldRotation
-                bone.line.color = (255, 0, 0)
-
-                if self.flipX:
-                    bone.line.xScale = -1
-                    bone.line.rotation = -bone.line.rotation
-                else:
-                    bone.line.xScale = 1
-                if self.flipY:
-                    bone.line.yScale = -1
-                    bone.line.rotation = -bone.line.rotation
-                else:
-                    bone.line.yScale = 1
-
-                bone.line.x1 = bone.line.x + math.cos(math.radians(bone.line.rotation)) * bone.line.length
-                bone.line.y1 = bone.line.y + math.sin(math.radians(bone.line.rotation)) * bone.line.length
-
-                pygame.draw.line(screen, bone.line.color, (bone.line.x, bone.line.y), (bone.line.x1, bone.line.y1))
-
-                if not bone.circle:
-                    bone.circle = Circle(0, 0, 3)
-                bone.circle.x = int(bone.worldX) + self.x
-                bone.circle.y = -int(bone.worldY) + self.y
-                bone.circle.color = (0, 255, 0)
-                    
-                if 'top left' in bone.data.name:
-                    bone.circle.color = (255, 0, 0)
-                if 'top right' in bone.data.name:
-                    bone.circle.color = (255, 140, 0)
-                if 'bottom right' in bone.data.name:
-                    bone.circle.color = (255, 255, 0)
-                if 'bottom left' in bone.data.name:
-                    bone.circle.color = (199, 21, 133)
-
-                pygame.draw.circle(screen, 
-                                   bone.circle.color,
-                                   (bone.circle.x, bone.circle.y),
-                                   bone.circle.r,
-                                   0)
+        screen.blits(to_draw)

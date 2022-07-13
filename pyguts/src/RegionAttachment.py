@@ -22,7 +22,7 @@ class Vertex(object):
         self.color = Color()
         self.texCoords = TextureCoordinates()
 
-class RegionAttachment(spine.RegionAttachment):
+class RegionAttachment(spine.RegionAttachment.RegionAttachment):
     def __init__(self, region):
         super(RegionAttachment, self).__init__()
         self.verticies = [Vertex(), Vertex(), Vertex(), Vertex()]

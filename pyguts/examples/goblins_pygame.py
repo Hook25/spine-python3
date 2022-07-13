@@ -6,7 +6,7 @@ import pygame
 
 import pyguts as spine
 
-if __name__ == '__main__':
+def main():
     pygame.init()
 
     width, height = (640, 480)
@@ -71,4 +71,7 @@ if __name__ == '__main__':
         goblingirl.draw(screen, 0)
         pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')
         pygame.display.flip()
-pygame.quit()
+    pygame.quit()
+
+if __name__ == '__main__':
+    main()
