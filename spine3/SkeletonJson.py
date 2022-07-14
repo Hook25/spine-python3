@@ -8,8 +8,8 @@ from . import SlotData
 from . import Skin
 from . import AttachmentLoader
 
-from . import Animation
-
+from . import Timeline
+from .Animation import Animation 
 
 def readCurve(timeline, keyframeIndex, valueMap):
     try:
@@ -168,7 +168,7 @@ class SkeletonJson:
                 values = timelineMap[timelineName]
                 
                 if timelineName == 'rotate':
-                    timeline = Animation.Timeline.RotateTimeline(len(values))
+                    timeline = Timeline.RotateTimeline(len(values))
                     timeline.boneIndex = boneIndex
                     
                     keyframeIndex = 0
@@ -184,9 +184,9 @@ class SkeletonJson:
                     timeline = None
                     timelineScale = 1.0
                     if timelineName == 'scale':
-                        timeline = Animation.Timeline.ScaleTimeline(len(values))
+                        timeline = Timeline.ScaleTimeline(len(values))
                     else:
-                        timeline = Animation.Timeline.TranslateTimeline(len(values))
+                        timeline = Timeline.TranslateTimeline(len(values))
                         timelineScale = self.scale
                     timeline.boneIndex = boneIndex
                     
@@ -217,7 +217,7 @@ class SkeletonJson:
             for timelineName in timelineMap.keys():
                 values = timelineMap[timelineName]
                 if timelineName == 'color':
-                    timeline = Animation.Timeline.ColorTimeline(len(values))
+                    timeline = Timeline.ColorTimeline(len(values))
                     timeline.slotIndex = slotIndex
                     
                     keyframeIndex = 0
@@ -235,7 +235,7 @@ class SkeletonJson:
                         duration = timeline.getDuration()
 
                 elif timelineName == 'attachment':
-                    timeline = Animation.Timeline.AttachmentTimeline(len(values))
+                    timeline = Timeline.AttachmentTimeline(len(values))
                     timeline.slotIndex = slotIndex
                     
                     keyframeIndex = 0
@@ -249,7 +249,7 @@ class SkeletonJson:
                 else:
                     raise Exception('Invalid timeline type for a slot: %s (%s)' % (timelineName, slotName))
 
-        animation = Animation.Animation(name, timelines, duration)
+        animation = Animation(name, timelines, duration)
         return animation
                         
                 
