@@ -1,7 +1,7 @@
 import math
 
-from .Bone import Bone
-from .Slot import Slot
+from .bone import Bone
+from .slot import Slot
 
 class Skeleton:
     def __init__(self, skeletonData):

@@ -1,8 +1,8 @@
 import math
 
-from . import Attachment
+from . import attachment
 
-class BaseRegionAttachment(Attachment.Attachment):
+class BaseRegionAttachment(attachment.Attachment):
     def __init__(self):
         super().__init__()
         self.x = 0.0

@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-from .RegionAttachment import PyGameRegionAttachment
+from .region_attachment import PyGameRegionAttachment
 
 class AttachmentType(IntEnum):
     region = 0

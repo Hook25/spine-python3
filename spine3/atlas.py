@@ -46,7 +46,7 @@ class Atlas:
     def __init__(self, file : Path):
         self.pages = []
         self.regions = []
-        self.file_loc = (file.parent.parent)
+        self.file_loc = (Path(file).parent.parent)
         self.loadWithFile(file)
 
     def loadWithFile(self, file):

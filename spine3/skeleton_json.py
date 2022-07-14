@@ -2,14 +2,14 @@ import json
 import os
 import sys
 
-from . import SkeletonData
-from . import BoneData
-from . import SlotData
-from . import Skin
-from . import AttachmentLoader
+from . import skeleton_data
+from . import bone_data
+from . import slot_data
+from . import skin
+from . import attachment_loader
 
-from . import Timeline
-from .Animation import Animation 
+from . import timeline as tl
+from .animation import Animation 
 
 def readCurve(timeline, keyframeIndex, valueMap):
     try:
@@ -56,10 +56,10 @@ class SkeletonJson:
                 print('The API has changed.  You need to load skeleton data with readSkeletonDataFile(), not readSkeletonData()')
                 sys.exit()
  
-        skeletonData = SkeletonData.SkeletonData()
+        skeletonData = skeleton_data.SkeletonData()
                 
         for boneMap in root.get('bones', []):
-            boneData = BoneData.BoneData(name=boneMap['name'])
+            boneData = bone_data.BoneData(name=boneMap['name'])
 
             if 'parent' in boneMap:
                 boneData.parent = skeletonData.findBone(boneMap['parent'])
@@ -79,9 +79,9 @@ class SkeletonJson:
             boneName = slotMap['bone']
             boneData = skeletonData.findBone(boneName)
 
-            if not BoneData:
+            if not boneData:
                 raise Exception('Slot bone not found: %s' % boneName)
-            slotData = SlotData.SlotData(name=slotName, boneData=boneData)
+            slotData = slot_data.SlotData(name=slotName, boneData=boneData)
             
             if 'color' in slotMap:
                 s = slotMap['color']
@@ -97,10 +97,10 @@ class SkeletonJson:
             
         skinsMap = root.get('skins', {})
         for skinName in skinsMap.keys():
-            skin = Skin.Skin(skinName)
+            skin_spec = skin.Skin(skinName)
             skeletonData.skins.append(skin)
             if skinName == 'default':
-                skeletonData.defaultSkin = skin
+                skeletonData.defaultSkin = skin_spec
 
             slotMap = skinsMap[skinName]
             for slotName in slotMap.keys():
@@ -115,9 +115,9 @@ class SkeletonJson:
                     typeString = attachmentMap.get('type', 'region')
 
                     if typeString == 'region':
-                        type = AttachmentLoader.AttachmentType.region
+                        type = attachment_loader.AttachmentType.region
                     elif typeString == 'regionSequence':
-                        type = AttachmentLoader.AttachmentType.regionSequence
+                        type = attachment_loader.AttachmentType.regionSequence
                     else:
                         raise Exception('Unknown attachment type: %s (%s)' % (attachment['type'],
                                                                                   attachmentName))
@@ -125,7 +125,7 @@ class SkeletonJson:
                     attachment = self.attachmentLoader.newAttachment(type, 
                                                                      attachmentMap.get('name', attachmentName))
 
-                    if type == AttachmentLoader.AttachmentType.region or type == AttachmentLoader.AttachmentType.regionSequence:
+                    if type == attachment_loader.AttachmentType.region or type == attachment_loader.AttachmentType.regionSequence:
                         regionAttachment = attachment
                         regionAttachment.name = attachmentName
                         regionAttachment.x = float(attachmentMap.get('x', 0.0)) * self.scale
@@ -135,7 +135,7 @@ class SkeletonJson:
                         regionAttachment.rotation = float(attachmentMap.get('rotation', 0.0))
                         regionAttachment.width = float(attachmentMap.get('width', 32)) * self.scale
                         regionAttachment.height = float(attachmentMap.get('height', 32)) * self.scale                        
-                    skin.addAttachment(slotIndex, attachmentName, attachment)
+                    skin_spec.addAttachment(slotIndex, attachmentName, attachment)
 
         animations = root.get('animations', {})
         for animationName in animations:
@@ -168,40 +168,40 @@ class SkeletonJson:
                 values = timelineMap[timelineName]
                 
                 if timelineName == 'rotate':
-                    timeline = Timeline.RotateTimeline(len(values))
-                    timeline.boneIndex = boneIndex
+                    timeline_inst = tl.RotateTimeline(len(values))
+                    timeline_inst.boneIndex = boneIndex
                     
                     keyframeIndex = 0
                     for valueMap in values:
                         time = valueMap['time']
-                        timeline.setKeyframe(keyframeIndex, time, valueMap['angle'])
-                        timeline = readCurve(timeline, keyframeIndex, valueMap)
+                        timeline_inst.setKeyframe(keyframeIndex, time, valueMap['angle'])
+                        timeline_inst = readCurve(timeline_inst, keyframeIndex, valueMap)
                         keyframeIndex += 1
-                    timelines.append(timeline)
-                    if timeline.getDuration() > duration:
-                        duration = timeline.getDuration()
+                    timelines.append(timeline_inst)
+                    if timeline_inst.getDuration() > duration:
+                        duration = timeline_inst.getDuration()
                 elif timelineName == 'translate' or timelineName == 'scale':
-                    timeline = None
+                    timeline_inst = None
                     timelineScale = 1.0
                     if timelineName == 'scale':
-                        timeline = Timeline.ScaleTimeline(len(values))
+                        timeline_inst = tl.ScaleTimeline(len(values))
                     else:
-                        timeline = Timeline.TranslateTimeline(len(values))
+                        timeline_inst = tl.TranslateTimeline(len(values))
                         timelineScale = self.scale
-                    timeline.boneIndex = boneIndex
+                    timeline_inst.boneIndex = boneIndex
                     
                     keyframeIndex = 0
                     for valueMap in values:
                         time = valueMap['time']
-                        timeline.setKeyframe(keyframeIndex,
+                        timeline_inst.setKeyframe(keyframeIndex,
                                              valueMap['time'],
                                              valueMap.get('x', 0.0),
                                              valueMap.get('y', 0.0))
-                        timeline = readCurve(timeline, keyframeIndex, valueMap)
+                        timeline_inst = readCurve(timeline_inst, keyframeIndex, valueMap)
                         keyframeIndex += 1
-                    timelines.append(timeline)
-                    if timeline.getDuration() > duration:
-                        duration = timeline.getDuration()
+                    timelines.append(timeline_inst)
+                    if timeline_inst.getDuration() > duration:
+                        duration = timeline_inst.getDuration()
                 else:
                     raise Exception('Invalid timeline type for a bone: %s (%s)' % (timelineName, boneName))
 
@@ -217,35 +217,35 @@ class SkeletonJson:
             for timelineName in timelineMap.keys():
                 values = timelineMap[timelineName]
                 if timelineName == 'color':
-                    timeline = Timeline.ColorTimeline(len(values))
-                    timeline.slotIndex = slotIndex
+                    timeline_inst = tl.ColorTimeline(len(values))
+                    timeline_inst.slotIndex = slotIndex
                     
                     keyframeIndex = 0
                     for valueMap in values:
-                        timeline.setKeyframe(keyframeIndex, 
+                        timeline_inst.setKeyframe(keyframeIndex, 
                                              valueMap['time'], 
                                              int(valueMap['color'][0:2], 16),
                                              int(valueMap['color'][2:4], 16),
                                              int(valueMap['color'][4:6], 16),
                                              int(valueMap['color'][6:8], 16))
-                        timeline = readCurve(timeline, keyframeIndex, valueMap)
+                        timeline_inst = readCurve(timeline_inst, keyframeIndex, valueMap)
                         keyframeIndex += 1
-                    timelines.append(timeline)
-                    if timeline.getDuration > duration:
-                        duration = timeline.getDuration()
+                    timelines.append(timeline_inst)
+                    if timeline_inst.getDuration > duration:
+                        duration = timeline_inst.getDuration()
 
                 elif timelineName == 'attachment':
-                    timeline = Timeline.AttachmentTimeline(len(values))
-                    timeline.slotIndex = slotIndex
+                    timeline_inst = tl.AttachmentTimeline(len(values))
+                    timeline_inst.slotIndex = slotIndex
                     
                     keyframeIndex = 0
                     for valueMap in values:
                         valueName = valueMap['name']
-                        timeline.setKeyframe(keyframeIndex, valueMap['time'], '' if not valueName else valueName)
+                        timeline_inst.setKeyframe(keyframeIndex, valueMap['time'], '' if not valueName else valueName)
                         keyframeIndex += 1
-                    timelines.append(timeline)
-                    if timeline.getDuration() > duration:
-                        duration = timeline.getDuration()
+                    timelines.append(timeline_inst)
+                    if timeline_inst.getDuration() > duration:
+                        duration = timeline_inst.getDuration()
                 else:
                     raise Exception('Invalid timeline type for a slot: %s (%s)' % (timelineName, slotName))
 
