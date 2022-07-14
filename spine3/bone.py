@@ -1,5 +1,32 @@
 import math
 
+class BoneData:
+    def __init__(self, name):
+        self.name = name
+        self.parent = None
+        self.length = 0.0
+        self.x = 0.0
+        self.y = 0.0
+        self.rotation = 0.0
+        self.scaleX = 1.0
+        self.scaleY = 1.0
+        self.flipY = False
+    @classmethod
+    def build_from(cls, json_dct : dict, scale : float, sketon_data):
+        to_r = cls(name=json_dct['name'])
+        if 'parent' in json_dct:
+            to_r.parent = sketon_data.findBone(json_dct['parent'])
+            if not to_r.parent:
+                raise Exception('Parent bone not found: %s' % json_dct['name'])
+
+        to_r.length = float(json_dct.get('length', 0.0)) * scale
+        to_r.x = float(json_dct.get('x', 0.0)) * scale
+        to_r.y = float(json_dct.get('y', 0.0)) * scale
+        to_r.rotation = float(json_dct.get('rotation', 0.0))
+        to_r.scaleX = float(json_dct.get('scaleX', 1.0))
+        to_r.scaleY = float(json_dct.get('scaleY', 1.0))
+        return to_r
+
 class Bone:
     def __init__(self, data):
         self.data = data
@@ -20,7 +47,6 @@ class Bone:
         self.worldScaleY = 0.0
         self.line = None
         self.circle = None
-        
 
     def setToBindPose(self):
         self.x = self.data.x
@@ -28,7 +54,6 @@ class Bone:
         self.rotation = self.data.rotation
         self.scaleX = self.data.scaleX
         self.scaleY = self.data.scaleY
-
 
     def updateWorldTransform(self, flipX, flipY):
         if self.parent:

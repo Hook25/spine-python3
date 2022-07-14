@@ -1,7 +1,57 @@
 import math
+import json
+import typing
 
 from .bone import Bone
-from .slot import Slot
+from .slots import Slot
+from . import slots
+from . import skin
+from . import bone
+from . import animation 
+
+class SkeletonData:
+    def __init__(self):
+        self.bones = []
+        self.slots = []
+        self.skins = []
+        self.animations = []
+        self.defaultSkin = None
+
+    def findBone(self, boneName):
+        for i, bone in enumerate(self.bones):
+            if bone.name == boneName:
+                return bone
+        raise ValueError("Unknown bone: %s" % boneName)
+
+    def findBoneIndex(self, boneName):
+        for i, bone in enumerate(self.bones):
+            if bone.name == boneName:
+                return i
+        raise ValueError("Unknown bone: %s" % boneName)
+
+    def findSlot(self, slotName):
+        for i, slot in enumerate(self.slots):
+            if slot.name == slotName:
+                return slot
+        raise ValueError("Unknown slot: %s" % slotName)
+
+    def findSlotIndex(self, slotName):
+        for i, slot in enumerate(self.slots):
+            if slot.name == slotName:
+                return i
+        raise ValueError("Unknown slot: %s" % slotName)
+
+    def findSkin(self, skinName):
+        for i, skin in enumerate(self.skins):
+            if skin.name == skinName:
+                return skin
+        raise ValueError("Unknown skin: %s" % skinName)
+
+    def findAnimation(self, animationName):
+        for i, animation in enumerate(self.animations):
+            if animation.name == animationName:
+                return animation
+        raise ValueError("Unknown animation: %s" % animationName)
 
 class Skeleton:
     def __init__(self, skeletonData):
@@ -173,5 +223,42 @@ class Skeleton:
 
     def update(self, delta):
         self.time += delta
+    
+    @classmethod
+    def parse(cls, desc : typing.TextIO | str, attachment_loader, scale = 1):
+        try:
+            root = json.loads(desc) 
+        except TypeError:
+            root = json.load(desc)
+        skeleton_data = SkeletonData()
+                
+        for bone_map in root.get('bones', []):
+            boneData = bone.BoneData.build_from(bone_map, scale, skeleton_data)
+            skeleton_data.bones.append(boneData)
+
+        for slot_map in root.get('slots', []):
+            slot_data = slots.SlotData.build_from(slot_map, skeleton_data)
+            skeleton_data.slots.append(slot_data)
+            
+        for (skin_name, slot_map) in root.get('skins', {}).items():
+            skin_spec = skin.Skin.build_from(
+                slot_map, 
+                skin_name, 
+                skeleton_data, 
+                scale, 
+                attachment_loader
+            )
+            skeleton_data.skins.append(skin_spec)
+
+        for (animation_name, animation_map) in root.get('animations', {}).items():
+            animation_data = animation.Animation.build_from(
+                name = animation_name, 
+                root = animation_map, 
+                skeleton_data = skeleton_data, 
+                scale = scale
+            )
+            skeleton_data.animations.append(animation_data)
+
+        return cls(skeleton_data)
 
     

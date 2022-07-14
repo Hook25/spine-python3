@@ -1,19 +1,7 @@
 import math
 
-class Timeline:
+class CurveTimeline:
     def __init__(self, keyframeCount):
-        pass
-
-    def getKeyframeCount(self):
-        pass
-
-    def apply(skeleton, time, alpha):
-        pass
-
-
-class CurveTimeline(Timeline):
-    def __init__(self, keyframeCount):
-        super().__init__(keyframeCount)
         self.FRAME_SPACING = 6
         self.LINEAR = 0
         self.STEPPED = -1
@@ -332,9 +320,8 @@ class ColorTimeline(CurveTimeline):
         return 
 
 
-class AttachmentTimeline(Timeline):
+class AttachmentTimeline:
     def __init__(self, keyframeCount):
-        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -1
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.frames = [0.0] * keyframeCount

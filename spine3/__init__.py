@@ -1,3 +1,3 @@
 from . import atlas
-from . import skeleton_json
-from . import skeleton
+from . import skeletons
+from . import attachment_loader

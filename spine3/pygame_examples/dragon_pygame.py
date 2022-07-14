@@ -12,23 +12,21 @@ def main():
 
     screen = pygame.display.set_mode((width, height))
     screen.fill((0,0,0))
-    caption = 'PyGuts - A Pygame front-end based on the python-spine Runtime'
+    caption = 'spine3 - A Pygame and Spine Runtime'
     pygame.display.set_caption(caption, 'Spine Runtime')
 
-    print(get_asset('dragon.atlas'))
+    atlas = spine3.atlas.Atlas(file=get_asset('dragon.atlas'))
 
-    atlas = spine3.Atlas.Atlas(file=get_asset('dragon.atlas'))
-    skeletonJson = spine3.SkeletonJson.SkeletonJson(spine3.AttachmentLoader.AttachmentLoader(atlas))
-    skeletonData = skeletonJson.readSkeletonDataFile(get_asset('dragon.json'))
-
-    skeleton = spine3.Skeleton.Skeleton(skeletonData=skeletonData)
-
-    flyingAnimation = skeletonData.findAnimation('flying')
+    skeleton = spine3.skeletons.Skeleton.parse(
+        get_asset('dragon.json').open("r"),
+        spine3.attachment_loader.AttachmentLoader(atlas)
+    )
+    flyingAnimation = skeleton.data.findAnimation('flying')
     skeleton.debug = False
 
     skeleton.setToBindPose()
-    skeleton.x = 480
-    skeleton.y = 320
+    skeleton.x = 500
+    skeleton.y = 420
     skeleton.flipX = False
     skeleton.flipY = False
     skeleton.updateWorldTransform()
