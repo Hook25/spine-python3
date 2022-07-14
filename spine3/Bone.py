@@ -1,8 +1,7 @@
 import math
 
-class Bone(object):
+class Bone:
     def __init__(self, data):
-        super(Bone, self).__init__()
         self.data = data
         self.parent = None
         self.x = data.x

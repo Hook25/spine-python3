@@ -1,6 +1,5 @@
-class Key(object):
+class Key:
     def __init__(self, slotIndex, name):
-        super(Key, self).__init__()
         self.slotIndex = slotIndex
         self.name = name
     
@@ -16,9 +15,8 @@ class Key(object):
         return (self.slotIndex, self.name) == (other.slotIndex, other.name)
 
 
-class Skin(object):
+class Skin:
     def __init__(self, name):
-        super(Skin, self).__init__()
         if not name:
             raise Exception('Name cannot be None.')
         self.name = name

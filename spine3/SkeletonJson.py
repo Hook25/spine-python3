@@ -28,9 +28,8 @@ def readCurve(timeline, keyframeIndex, valueMap):
     return timeline
 
 
-class SkeletonJson(object):
+class SkeletonJson:
     def __init__(self, attachmentLoader):
-        super(SkeletonJson, self).__init__()
         self.attachmentLoader = attachmentLoader
         self.scale = 1.0
         self.flipY = False            

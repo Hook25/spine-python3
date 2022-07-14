@@ -1,6 +1,5 @@
-class Slot(object):
+class Slot:
     def __init__(self, slotData, skeleton, bone):
-        super(Slot, self).__init__()
         if not slotData:
             raise Exception('slotData cannot be None.')
         if not skeleton:

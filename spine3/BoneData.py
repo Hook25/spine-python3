@@ -1,6 +1,5 @@
-class BoneData(object):
+class BoneData:
     def __init__(self, name):
-        super(BoneData, self).__init__()
         self.name = name
         self.parent = None
         self.length = 0.0

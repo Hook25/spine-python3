@@ -1,8 +1,8 @@
 import math
 
-class Timeline(object):
+class Timeline:
     def __init__(self, keyframeCount):
-        super(Timeline, self).__init__()
+        pass
 
     def getKeyframeCount(self):
         pass

@@ -1,6 +1,5 @@
-class SkeletonData(object):
+class SkeletonData:
     def __init__(self):
-        super(SkeletonData, self).__init__()
         self.bones = []
         self.slots = []
         self.skins = []

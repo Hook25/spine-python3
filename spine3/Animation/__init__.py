@@ -1,6 +1,6 @@
 from . import Timeline
 
-class Animation(object):
+class Animation:
     def __init__(self, name, timelines, duration):
         if not timelines: 
             raise Exception('Timelines cannot be None.')

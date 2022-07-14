@@ -1,4 +1,4 @@
-class Attachment(object):
+class Attachment:
     def __init__(self):
         self.name = None
 
