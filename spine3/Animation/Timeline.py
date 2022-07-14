@@ -13,7 +13,7 @@ class Timeline:
 
 class CurveTimeline(Timeline):
     def __init__(self, keyframeCount):
-        super(CurveTimeline, self).__init__(keyframeCount)
+        super().__init__(keyframeCount)
         self.FRAME_SPACING = 6
         self.LINEAR = 0
         self.STEPPED = -1
@@ -105,7 +105,7 @@ def binarySearch(values, target, step):
 
 class RotateTimeline(CurveTimeline):
     def __init__(self, keyframeCount):
-        super(RotateTimeline, self).__init__(keyframeCount)
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -2
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_VALUE = 1
@@ -169,7 +169,7 @@ class RotateTimeline(CurveTimeline):
 
 class TranslateTimeline(CurveTimeline):
     def __init__(self, keyframeCount):
-        super(TranslateTimeline, self).__init__(keyframeCount)
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -3
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_X = 1
@@ -223,7 +223,7 @@ class TranslateTimeline(CurveTimeline):
 
 class ScaleTimeline(TranslateTimeline):
     def __init__(self, keyframeCount):
-        super(ScaleTimeline, self).__init__(keyframeCount)
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -3
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_X = 1
@@ -259,7 +259,7 @@ class ScaleTimeline(TranslateTimeline):
 
 class ColorTimeline(CurveTimeline):
     def __init__(self, keyframeCount):
-        super(ColorTimeline, self).__init__(keyframeCount)
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -5
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_R = 1
@@ -334,7 +334,7 @@ class ColorTimeline(CurveTimeline):
 
 class AttachmentTimeline(Timeline):
     def __init__(self, keyframeCount):
-        super(AttachmentTimeline, self).__init__(keyframeCount)
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -1
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.frames = [0.0] * keyframeCount

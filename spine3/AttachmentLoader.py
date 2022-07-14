@@ -8,7 +8,7 @@ class AttachmentType(IntEnum):
 
 class AttachmentLoader:
     def __init__(self, atlas):
-        super(AttachmentLoader, self).__init__()
+        super().__init__()
         self.atlas = atlas
 
     def newAttachment(self, type, name):

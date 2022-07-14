@@ -6,7 +6,6 @@ from . import BoneData
 from . import SkeletonData
 from . import SlotData
 from . import Attachment
-from . import Enum
 from . import SkeletonJson
 from . import AttachmentLoader
 from . import Skin
