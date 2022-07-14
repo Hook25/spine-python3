@@ -2,6 +2,8 @@ import math
 import json
 import typing
 
+from pkg_resources import to_filename
+
 from .bone import Bone
 from .slots import Slot
 from . import slots
@@ -54,51 +56,58 @@ class SkeletonData:
         raise ValueError("Unknown animation: %s" % animationName)
 
 class Skeleton:
-    def __init__(self, skeletonData):
+    def __init__(self, skeletonData : SkeletonData):
         self.data = skeletonData
         self.skin = None
         self.x = 0
         self.y = 0
         self.time = 0.0
-        self.bones = []
-        self.slots = []
-        self.drawOrder = []
         self.flipX = False
         self.flipY = False
 
         if not self.data:
             raise ValueError('skeletonData can not be null.')
 
-        boneCount = len(self.data.bones)
-        self.bones = [None] * boneCount
-        for i in range(boneCount):
-            boneData = self.data.bones[i]
-            bone = Bone(data=boneData)
-            if boneData.parent:
-                for ii in range(boneCount):
-                    if self.data.bones[ii] == boneData.parent:
-                        bone.parent = self.bones[ii]
-                        break
-            self.bones[i] = bone
-
-        slotCount = len(self.data.slots)
-        self.slots = [None] * slotCount
-        for i in range(slotCount):
-            slotData = self.data.slots[i]
-            bone = None
-            for ii in range(boneCount):
-                if self.data.bones[ii] == slotData.boneData:
-                    bone = self.bones[ii]
-                    break
-            slot = Slot(slotData=slotData, skeleton=self, bone=bone)
-            self.slots[i] = slot
-            self.drawOrder.append(slot)
+        self.bones = self._build_bones(self.data.bones)
+        self.slots = self._build_slots(self.data.slots, self.data.bones)
+        self.ordered_drawables = [
+            slot for slot in self.slots 
+                if slot.attachment and slot.attachment.texture
+        ]
     
+    def _build_slots(self, slots_data, bones_data):
+        to_r = []
+        for slotData in slots_data:
+            bone = next(
+                self.bones[i] # get the bone who's data matches 
+                    for (i, bone) in enumerate(bones_data)
+                        if slotData.boneData == bone # the one contained in the slot
+            )
+            slot = Slot(slotData=slotData, skeleton=self, bone=bone)
+            to_r.append(slot)
+        return to_r
+
+    def _build_bones(self, bones_data):
+        to_r = [
+            Bone(bone_data) for bone_data in bones_data
+        ]
+        # Now construct the hierarchy, connecting each bone to its parent
+        to_pair = (
+            (bone, bone_data) for (bone, bone_data) in zip(to_r, bones_data)
+                if bone_data.parent
+        )
+        for (bone, bone_data) in to_pair:
+            index = next( # get the index of the first candidate 
+                i for (i, candidate_parent) in enumerate(bones_data) 
+                    if candidate_parent == bone_data.parent # that is our parent
+            )
+            bone.parent = to_r[index]
+        return to_r
+
     def draw(self, screen):
         import pygame
-        drawable_slots = (slot for slot in self.drawOrder if slot.attachment and slot.attachment.texture)
         to_draw = []
-        for slot in drawable_slots:
+        for slot in self.ordered_drawables:
             x = self.x + slot.bone.worldX + slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
             y = self.y - (slot.bone.worldY + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
 
@@ -143,20 +152,20 @@ class Skeleton:
         screen.blits(to_draw)
 
     def updateWorldTransform(self):
-        for i, bone in enumerate(self.bones):
-            self.bones[i].updateWorldTransform(self.flipX, self.flipY)
+        for bone in self.bones:
+            bone.updateWorldTransform(self.flipX, self.flipY)
 
     def setToBindPose(self):
         self.setBonesToBindPose()
         self.setSlotsToBindPose()
 
     def setBonesToBindPose(self):
-        for i, bone in enumerate(self.bones):
-            self.bones[i].setToBindPose()
+        for bone in self.bones:
+            bone.setToBindPose()
 
     def setSlotsToBindPose(self):
-        for i, bone in enumerate(self.slots):
-            self.slots[i].setToBindPoseWithIndex(i)
+        for i, slot in enumerate(self.slots):
+            slot.setToBindPoseWithIndex(i)
 
     def getRootBone(self):
         if len(self.bones):
