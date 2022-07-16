@@ -216,7 +216,6 @@ class Skeleton:
                 return attachment
         if self.skin:
             return self.skin.get_attachment(slot_index, attachment_name)
-        breakpoint()
         return None
 
     def set_attachment(self, slot_name, attachment_name):
