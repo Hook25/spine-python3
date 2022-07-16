@@ -111,8 +111,8 @@ class Skeleton:
 
             rotation = -(slot.bone.world_rotation + slot.attachment.rotation)
 
-            x_scale = slot.bone.world_scale_x + slot.attachment.scaleX - 1
-            y_scale = slot.bone.world_scale_y + slot.attachment.scaleY - 1
+            x_scale = slot.bone.world_scale_x + slot.attachment.scale_x - 1
+            y_scale = slot.bone.world_scale_y + slot.attachment.scale_y - 1
 
             if self.flip_x:
                 x_scale = -x_scale

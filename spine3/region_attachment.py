@@ -7,46 +7,48 @@ class BaseRegionAttachment(attachment.Attachment):
         super().__init__()
         self.x = 0.0
         self.y = 0.0
-        self.scaleX = 1.0
-        self.scaleY = 1.0
+        self.scale_x = 1.0
+        self.scale_y = 1.0
         self.rotation = 0.0
         self.width = 0.0
         self.height = 0.0
-        self.offset = [0.0,
-                       0.0,
-                       0.0,
-                       0.0,
-                       0.0,
-                       0.0,
-                       0.0,
-                       0.0]
+        self.offset = [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ]
 
-    def updateOffset(self):
-        localX2 = self.width / 2.0
-        localY2 = self.height / 2.0
-        localX = -localX2
-        localY = -localY2
-        localX *= self.scaleX
-        localY *= self.scaleY
+    def update_offset(self):
+        local_x_2 = self.width / 2.0
+        local_y_2 = self.height / 2.0
+        local_x = -local_x_2
+        local_y = -local_y_2
+        local_x *= self.scale_x
+        local_y *= self.scale_y
         radians = math.radians(self.rotation)
         cos = math.cos(radians)
         sin = math.sin(radians)
-        localXCos = localX * cos + self.x
-        localXSin = localX * sin
-        localYCos = localY * cos + self.y
-        localYSin = localY * sin
-        localX2Cos = localX2 * cos + self.x
-        localX2Sin = localX2 * sin
-        localY2Cos = localY2 * cos + self.y
-        localY2Sin = localY2 * sin
-        self.offset[0] = localXCos - localYSin
-        self.offset[1] = localYCos + localXSin
-        self.offset[2] = localXCos - localY2Sin
-        self.offset[3] = localY2Cos + localXSin
-        self.offset[4] = localX2Cos - localY2Sin
-        self.offset[5] = localY2Cos + localX2Sin
-        self.offset[6] = localX2Cos - localYSin
-        self.offset[7] = localYCos + localX2Sin
+        local_x_cos = local_x * cos + self.x
+        local_x_sin = local_x * sin
+        local_y_cos = local_y * cos + self.y
+        local_y_sin = local_y * sin
+        local_x_2_cos = local_x_2 * cos + self.x
+        local_x_2_sin = local_x_2 * sin
+        local_y_2_cos = local_y_2 * cos + self.y
+        local_y_2_sin = local_y_2 * sin
+        self.offset[0] = local_x_cos - local_y_sin
+        self.offset[1] = local_y_cos + local_x_sin
+        self.offset[2] = local_x_cos - local_y_2_sin
+        self.offset[3] = local_y_2_cos + local_x_sin
+        self.offset[4] = local_x_2_cos - local_y_2_sin
+        self.offset[5] = local_y_2_cos + local_x_2_sin
+        self.offset[6] = local_x_2_cos - local_y_sin
+        self.offset[7] = local_y_cos + local_x_2_sin
 
 class TextureCoordinates:
     def __init__(self):
@@ -57,7 +59,7 @@ class ColoredVertex:
     def __init__(self):
         import pygame
         self.color = pygame.Color(0, 0, 0, 0)
-        self.texCoords = TextureCoordinates()
+        self.tex_coords = TextureCoordinates()
 
 class PyGameRegionAttachment(BaseRegionAttachment):
     def __init__(self, region):
@@ -73,23 +75,23 @@ class PyGameRegionAttachment(BaseRegionAttachment):
         self.offset = pygame.Rect(0, 0, region.width, region.height)
         self.offset.center = (region.width / 2, region.height / 2)
         if region.rotate:
-            self.verticies[1].texCoords.x = self.u
-            self.verticies[1].texCoords.y = self.v2
-            self.verticies[2].texCoords.x = self.u
-            self.verticies[2].texCoords.y = self.v
-            self.verticies[3].texCoords.x = self.u2
-            self.verticies[3].texCoords.y = self.v
-            self.verticies[0].texCoords.x = self.u2
-            self.verticies[0].texCoords.y = self.v2
+            self.verticies[1].tex_coords.x = self.u
+            self.verticies[1].tex_coords.y = self.v2
+            self.verticies[2].tex_coords.x = self.u
+            self.verticies[2].tex_coords.y = self.v
+            self.verticies[3].tex_coords.x = self.u2
+            self.verticies[3].tex_coords.y = self.v
+            self.verticies[0].tex_coords.x = self.u2
+            self.verticies[0].tex_coords.y = self.v2
         else:
-            self.verticies[0].texCoords.x = self.u
-            self.verticies[0].texCoords.y = self.v2
-            self.verticies[1].texCoords.x = self.u
-            self.verticies[1].texCoords.y = self.v
-            self.verticies[2].texCoords.x = self.u2
-            self.verticies[2].texCoords.y = self.v
-            self.verticies[3].texCoords.x = self.u2
-            self.verticies[3].texCoords.y = self.v2
+            self.verticies[0].tex_coords.x = self.u
+            self.verticies[0].tex_coords.y = self.v2
+            self.verticies[1].tex_coords.x = self.u
+            self.verticies[1].tex_coords.y = self.v
+            self.verticies[2].tex_coords.x = self.u2
+            self.verticies[2].tex_coords.y = self.v
+            self.verticies[3].tex_coords.x = self.u2
+            self.verticies[3].tex_coords.y = self.v2
 
     def draw(self, slot):
         skeleton = slot.skeleton
@@ -116,17 +118,16 @@ class PyGameRegionAttachment(BaseRegionAttachment):
         self.verticies[3].color.b = b
         self.verticies[3].color.a = a
 
-        self.updateOffset()
-        self.updateWorldVerticies(slot.bone)
+        self.update_offset()
+        self.update_world_verticies(slot.bone)
 
         skeleton.texture = self.texture
-        skeleton.vertexArray.append(self.verticies[0])
-        skeleton.vertexArray.append(self.verticies[1])
-        skeleton.vertexArray.append(self.verticies[2])
-        skeleton.vertexArray.append(self.verticies[3])
+        skeleton.vertex_array.append(self.verticies[0])
+        skeleton.vertex_array.append(self.verticies[1])
+        skeleton.vertex_array.append(self.verticies[2])
+        skeleton.vertex_array.append(self.verticies[3])
 
-
-    def updateWorldVertices(self, bone):
+    def update_world_vertices(self, bone):
         x = bone.worldX
         y = bone.worldY
         m00 = bone.m00
