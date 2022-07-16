@@ -2,8 +2,6 @@ import math
 import json
 import typing
 
-from pkg_resources import to_filename
-
 from .bone import Bone
 from .slots import Slot
 from . import slots
