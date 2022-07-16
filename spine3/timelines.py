@@ -224,8 +224,8 @@ class ScaleTimeline(TranslateTimeline):
         
         bone = skeleton.bones[self.boneIndex]
         if time >= self.frames[self.LAST_FRAME_TIME]: # Time is after last frame
-            bone.scaleX += (bone.data.scaleX - 1 + self.frames[len(self.frames) - 2] - bone.scaleX) * alpha
-            bone.scaleY += (bone.data.scaleY - 1 + self.frames[len(self.frames) - 1] - bone.scaleY) * alpha
+            bone.scale_x += (bone.data.scale_x - 1 + self.frames[len(self.frames) - 2] - bone.scale_x) * alpha
+            bone.scale_y += (bone.data.scale_y - 1 + self.frames[len(self.frames) - 1] - bone.scale_y) * alpha
             return
         
         # Interpolate between the last frame and the current frame
@@ -240,8 +240,8 @@ class ScaleTimeline(TranslateTimeline):
             percent = 1.0
         percent = self.getCurvePercent(frameIndex / self.FRAME_SPACING - 1, percent)
         
-        bone.scaleX += (bone.data.scaleX - 1 + lastFrameX + (self.frames[frameIndex + self.FRAME_X] - lastFrameX) * percent - bone.scaleX) * alpha
-        bone.scaleY += (bone.data.scaleY - 1 + lastFrameY + (self.frames[frameIndex + self.FRAME_Y] - lastFrameY) * percent - bone.scaleY) * alpha
+        bone.scale_x += (bone.data.scale_x - 1 + lastFrameX + (self.frames[frameIndex + self.FRAME_X] - lastFrameX) * percent - bone.scale_x) * alpha
+        bone.scale_y += (bone.data.scale_y - 1 + lastFrameY + (self.frames[frameIndex + self.FRAME_Y] - lastFrameY) * percent - bone.scale_y) * alpha
         return 
 
 

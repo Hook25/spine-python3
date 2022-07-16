@@ -24,7 +24,7 @@ def main():
     flyingAnimation = skeleton.data.find_animation('flying')
     skeleton.debug = False
 
-    skeleton.setToBindPose()
+    skeleton.set_to_bind_pose()
     skeleton.x = 500
     skeleton.y = 420
     skeleton.flipX = False

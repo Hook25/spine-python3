@@ -106,13 +106,13 @@ class Skeleton:
         import pygame
         to_draw = []
         for slot in self.ordered_drawables:
-            x = self.x + slot.bone.worldX + slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
-            y = self.y - (slot.bone.worldY + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
+            x = self.x + slot.bone.world_x + slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
+            y = self.y - (slot.bone.world_y + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
 
-            rotation = -(slot.bone.worldRotation + slot.attachment.rotation)
+            rotation = -(slot.bone.world_rotation + slot.attachment.rotation)
 
-            x_scale = slot.bone.worldScaleX + slot.attachment.scaleX - 1
-            y_scale = slot.bone.worldScaleY + slot.attachment.scaleY - 1
+            x_scale = slot.bone.world_scale_x + slot.attachment.scaleX - 1
+            y_scale = slot.bone.world_scale_y + slot.attachment.scaleY - 1
 
             if self.flip_x:
                 x_scale = -x_scale
@@ -152,13 +152,13 @@ class Skeleton:
         for bone in self.bones:
             bone.update_world_transform(self.flip_x, self.flip_y)
 
-    def setToBindPose(self):
+    def set_to_bind_pose(self):
         self.set_bones_to_bind_pose()
         self.set_slots_to_bind_pose()
 
     def set_bones_to_bind_pose(self):
         for bone in self.bones:
-            bone.setToBindPose()
+            bone.set_to_bind_pose()
 
     def set_slots_to_bind_pose(self):
         for i, slot in enumerate(self.slots):
