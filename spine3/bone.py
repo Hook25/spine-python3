@@ -23,8 +23,8 @@ class BoneData:
         to_r.x = float(json_dct.get('x', 0.0)) * scale
         to_r.y = float(json_dct.get('y', 0.0)) * scale
         to_r.rotation = float(json_dct.get('rotation', 0.0))
-        to_r.scale_x = float(json_dct.get('scale_x', 1.0))
-        to_r.scale_y = float(json_dct.get('scale_y', 1.0))
+        to_r.scale_x = float(json_dct.get('scaleX', 1.0))
+        to_r.scale_y = float(json_dct.get('scaleY', 1.0))
         return to_r
 
 class Bone:

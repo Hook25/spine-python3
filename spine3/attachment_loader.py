@@ -26,8 +26,8 @@ class AttachmentLoader:
         attachment.name = attach_name
         attachment.x = float(attach_map.get('x', 0.0)) * scale
         attachment.y = float(attach_map.get('y', 0.0)) * scale
-        attachment.scaleX = float(attach_map.get('scaleX', 1.0))
-        attachment.scaleY = float(attach_map.get('scaleY', 1.0))
+        attachment.scale_x = float(attach_map.get('scaleX', 1.0))
+        attachment.scale_y = float(attach_map.get('scaleY', 1.0))
         attachment.rotation = float(attach_map.get('rotation', 0.0))
         attachment.width = float(attach_map.get('width', 32)) * scale
         attachment.height = float(attach_map.get('height', 32)) * scale  

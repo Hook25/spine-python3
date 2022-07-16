@@ -4,15 +4,15 @@ class SlotData:
             raise ValueError('Name cannot be None.')
 
         if not bone_data:
-            raise ValueError('boneData cannot be None.')
+            raise ValueError('bone_data cannot be None.')
 
         self.name = name
-        self.boneData = bone_data
+        self.bone_data = bone_data
         self.r = 255
         self.g = 255
         self.b = 255
         self.a = 255
-        self.attachmentName = None
+        self.attachment_name = None
     @classmethod
     def build_from(cls, slot_map, skeleton_data):
         slot_name = slot_map['name']
@@ -29,19 +29,19 @@ class SlotData:
             slot_data.a = int(color_hex[6:8], 16)
 
         if 'attachment' in slot_map:
-            slot_data.attachmentName = slot_map['attachment']
+            slot_data.attachment_name = slot_map['attachment']
 
         return slot_data
             
 class Slot:
-    def __init__(self, slotData, skeleton, bone):
-        if not slotData:
+    def __init__(self, slot_data, skeleton, bone):
+        if not slot_data:
             raise Exception('slotData cannot be None.')
         if not skeleton:
             raise Exception('skeleton cannot be None.')
         if not bone:
             raise Exception('bone cannot be None.')
-        self.data = slotData
+        self.data = slot_data
         self.skeleton = skeleton
         self.bone = bone
         self.r = 255
@@ -49,38 +49,38 @@ class Slot:
         self.b = 255
         self.a = 255
         self.attachment = None
-        self.attachmentTime = 0.0
-        self.setToBindPose()
+        self.attachment_time = 0.0
+        self.set_to_bind_pose()
 
 
-    def setColor(self, r, g, b, a):
+    def set_color(self, r, g, b, a):
         self.r = r
         self.g = g
         self.b = b
         self.a = a
                           
         
-    def setAttachment(self, attachment):
+    def set_attachment(self, attachment):
         self.attachment = attachment
-        self.attachmentTime = self.skeleton.time
+        self.attachment_time = self.skeleton.time
 
 
-    def setAttachmentTime(self, time):
-        self.attachmentTime = self.skeleton.time - time
+    def set_attachment_time(self, time):
+        self.attachment_time = self.skeleton.time - time
 
 
-    def getAttachmentTime(self):
-        return self.skeleton.time - self.attachmentTime
+    def get_attachment_time(self):
+        return self.skeleton.time - self.attachment_time
 
     
-    def setToBindPose(self):
+    def set_to_bind_pose(self):
         for i, slot in enumerate(self.skeleton.data.slots):
             if self.data == slot:
-                self.setToBindPoseWithIndex(i)
+                self.set_to_bind_pose_with_index(i)
 
 
-    def setToBindPoseWithIndex(self, slotIndex):
-        self.setColor(self.data.r, self.data.g, self.data.b, self.data.a)
-        self.setAttachment(self.skeleton.get_attachment_by_index(slotIndex, self.data.attachmentName) if self.data.attachmentName else None)
+    def set_to_bind_pose_with_index(self, slotIndex):
+        self.set_color(self.data.r, self.data.g, self.data.b, self.data.a)
+        self.set_attachment(self.skeleton.get_attachment_by_index(slotIndex, self.data.attachment_name) if self.data.attachment_name else None)
     
     

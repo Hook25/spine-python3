@@ -75,13 +75,13 @@ class Skeleton:
     
     def _build_slots(self, slots_data, bones_data):
         to_r = []
-        for slotData in slots_data:
+        for slot_data in slots_data:
             bone = next(
                 self.bones[i] # get the bone who's data matches 
                     for (i, bone) in enumerate(bones_data)
-                        if slotData.boneData == bone # the one contained in the slot
+                        if slot_data.bone_data == bone # the one contained in the slot
             )
-            slot = Slot(slotData=slotData, skeleton=self, bone=bone)
+            slot = Slot(slot_data=slot_data, skeleton=self, bone=bone)
             to_r.append(slot)
         return to_r
 
@@ -162,7 +162,7 @@ class Skeleton:
 
     def set_slots_to_bind_pose(self):
         for i, slot in enumerate(self.slots):
-            slot.setToBindPoseWithIndex(i)
+            slot.set_to_bind_pose_with_index(i)
 
     def get_root_bone(self):
         return self.bones[0]
@@ -211,11 +211,11 @@ class Skeleton:
 
     def get_attachment_by_index(self, slot_index, attachment_name):
         if self.data.default_skin:
-            attachment = self.data.default_skin.getAttachment(slot_index, attachment_name)
+            attachment = self.data.default_skin.get_attachment(slot_index, attachment_name)
             if attachment:
                 return attachment
         if self.skin:
-            return self.skin.getAttachment(slot_index, attachment_name)
+            return self.skin.get_attachment(slot_index, attachment_name)
         breakpoint()
         return None
 
@@ -238,8 +238,8 @@ class Skeleton:
         skeleton_data = SkeletonData()
                 
         for bone_map in root.get('bones', []):
-            boneData = bone.BoneData.build_from(bone_map, scale, skeleton_data)
-            skeleton_data.bones.append(boneData)
+            bone_data = bone.BoneData.build_from(bone_map, scale, skeleton_data)
+            skeleton_data.bones.append(bone_data)
 
         for slot_map in root.get('slots', []):
             slot_data = slots.SlotData.build_from(slot_map, skeleton_data)

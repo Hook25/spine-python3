@@ -1,16 +1,16 @@
 from . import timelines
 
-def readCurve(timeline, keyframeIndex, valueMap):
+def read_curve(timeline, key_frame_index, value_map):
     try:
-        curve = valueMap['curve']
+        curve = value_map['curve']
     except KeyError:
         return timeline
 
     if curve == 'stepped':
-        timeline.setStepped(keyframeIndex)
+        timeline.set_stepped(key_frame_index)
     else:
-        timeline.setCurve(
-            keyframeIndex, 
+        timeline.set_curve(
+            key_frame_index, 
             *(float(x) for x in curve)
         )
     return timeline
@@ -55,97 +55,98 @@ class Animation:
 
         bones = root.get('bones', {})
 
-        for boneName in bones.keys():
-            boneIndex = skeleton_data.find_bone_index(boneName)
-            if boneIndex == -1:
-                raise Exception('Bone not found: %s' % boneName)
+        for bone_name in bones.keys():
+            bone_index = skeleton_data.find_bone_index(bone_name)
+            if bone_index == -1:
+                raise Exception('Bone not found: %s' % bone_name)
             
-            timelineMap = bones[boneName]
+            timeline_map = bones[bone_name]
 
-            for timelineName in timelineMap.keys():
-                values = timelineMap[timelineName]
+            for timeline_name in timeline_map.keys():
+                values = timeline_map[timeline_name]
                 
-                if timelineName == 'rotate':
+                if timeline_name == 'rotate':
                     timeline_inst = timelines.RotateTimeline(len(values))
-                    timeline_inst.boneIndex = boneIndex
+                    timeline_inst.bone_index = bone_index
                     
-                    keyframeIndex = 0
-                    for valueMap in values:
-                        time = valueMap['time']
-                        timeline_inst.setKeyframe(keyframeIndex, time, valueMap['angle'])
-                        timeline_inst = readCurve(timeline_inst, keyframeIndex, valueMap)
-                        keyframeIndex += 1
+                    key_frame_index = 0
+                    for value_map in values:
+                        time = value_map['time']
+                        timeline_inst.set_keyframe(key_frame_index, time, value_map['angle'])
+                        timeline_inst = read_curve(timeline_inst, key_frame_index, value_map)
+                        key_frame_index += 1
                     timelines_lst.append(timeline_inst)
-                    if timeline_inst.getDuration() > duration:
-                        duration = timeline_inst.getDuration()
-                elif timelineName == 'translate' or timelineName == 'scale':
+                    if timeline_inst.get_duration() > duration:
+                        duration = timeline_inst.get_duration()
+                elif timeline_name == 'translate' or timeline_name == 'scale':
                     timeline_inst = None
                     timelineScale = 1.0
-                    if timelineName == 'scale':
+                    if timeline_name == 'scale':
                         timeline_inst = timelines.ScaleTimeline(len(values))
                     else:
                         timeline_inst = timelines.TranslateTimeline(len(values))
                         timelineScale = scale
-                    timeline_inst.boneIndex = boneIndex
+                    timeline_inst.bone_index = bone_index
                     
-                    keyframeIndex = 0
-                    for valueMap in values:
-                        time = valueMap['time']
-                        timeline_inst.setKeyframe(keyframeIndex,
-                                             valueMap['time'],
-                                             valueMap.get('x', 0.0),
-                                             valueMap.get('y', 0.0))
-                        timeline_inst = readCurve(timeline_inst, keyframeIndex, valueMap)
-                        keyframeIndex += 1
+                    key_frame_index = 0
+                    for value_map in values:
+                        time = value_map['time']
+                        timeline_inst.set_keyframe(key_frame_index,
+                                             value_map['time'],
+                                             value_map.get('x', 0.0),
+                                             value_map.get('y', 0.0))
+                        timeline_inst = read_curve(timeline_inst, key_frame_index, value_map)
+                        key_frame_index += 1
                     timelines_lst.append(timeline_inst)
-                    if timeline_inst.getDuration() > duration:
-                        duration = timeline_inst.getDuration()
+                    if timeline_inst.get_duration() > duration:
+                        duration = timeline_inst.get_duration()
                 else:
-                    raise Exception('Invalid timeline type for a bone: %s (%s)' % (timelineName, boneName))
+                    raise Exception('Invalid timeline type for a bone: %s (%s)' % (timeline_name, bone_name))
 
 
         slots = root.get('slots', {})
 
-        for slotName in slots.keys():
-            slotIndex = skeleton_data.find_slot_index(slotName)
-            if slotIndex == -1:
-                raise Exception('Slot not found: %s' % slotName)
+        for slot_name in slots.keys():
+            slot_index = skeleton_data.find_slot_index(slot_name)
+            if slot_index == -1:
+                raise Exception('Slot not found: %s' % slot_name)
             
-            timelineMap = slots[slotName]
-            for timelineName in timelineMap.keys():
-                values = timelineMap[timelineName]
-                if timelineName == 'color':
+            timeline_map = slots[slot_name]
+            for timeline_name in timeline_map.keys():
+                values = timeline_map[timeline_name]
+                if timeline_name == 'color':
                     timeline_inst = timelines.ColorTimeline(len(values))
-                    timeline_inst.slotIndex = slotIndex
+                    timeline_inst.slot_index = slot_index
                     
-                    keyframeIndex = 0
-                    for valueMap in values:
-                        timeline_inst.setKeyframe(keyframeIndex, 
-                                             valueMap['time'], 
-                                             int(valueMap['color'][0:2], 16),
-                                             int(valueMap['color'][2:4], 16),
-                                             int(valueMap['color'][4:6], 16),
-                                             int(valueMap['color'][6:8], 16))
-                        timeline_inst = readCurve(timeline_inst, keyframeIndex, valueMap)
-                        keyframeIndex += 1
+                    key_frame_index = 0
+                    for value_map in values:
+                        timeline_inst.set_keyframe(key_frame_index, 
+                            value_map['time'], 
+                            int(value_map['color'][0:2], 16),
+                            int(value_map['color'][2:4], 16),
+                            int(value_map['color'][4:6], 16),
+                            int(value_map['color'][6:8], 16)
+                        )
+                        timeline_inst = read_curve(timeline_inst, key_frame_index, value_map)
+                        key_frame_index += 1
                     timelines_lst.append(timeline_inst)
-                    if timeline_inst.getDuration > duration:
-                        duration = timeline_inst.getDuration()
+                    if timeline_inst.get_duration > duration:
+                        duration = timeline_inst.get_duration()
 
-                elif timelineName == 'attachment':
+                elif timeline_name == 'attachment':
                     timeline_inst = timelines.AttachmentTimeline(len(values))
-                    timeline_inst.slotIndex = slotIndex
+                    timeline_inst.slot_index = slot_index
                     
-                    keyframeIndex = 0
-                    for valueMap in values:
-                        valueName = valueMap['name']
-                        timeline_inst.setKeyframe(keyframeIndex, valueMap['time'], '' if not valueName else valueName)
-                        keyframeIndex += 1
+                    key_frame_index = 0
+                    for value_map in values:
+                        value_name = value_map['name']
+                        timeline_inst.set_keyframe(key_frame_index, value_map['time'], '' if not value_name else value_name)
+                        key_frame_index += 1
                     timelines_lst.append(timeline_inst)
-                    if timeline_inst.getDuration() > duration:
-                        duration = timeline_inst.getDuration()
+                    if timeline_inst.get_duration() > duration:
+                        duration = timeline_inst.get_duration()
                 else:
-                    raise Exception('Invalid timeline type for a slot: %s (%s)' % (timelineName, slotName))
+                    raise Exception('Invalid timeline type for a slot: %s (%s)' % (timeline_name, slot_name))
 
         animation = Animation(name, timelines_lst, duration)
         return animation

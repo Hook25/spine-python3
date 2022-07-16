@@ -9,33 +9,33 @@ class Skin:
         self.name = name
         self.attachments = {}
 
-    def addAttachment(self, slot_index, name, attachment):
+    def add_attachment(self, slot_index, name, attachment):
         if not name:
             raise Exception('Name cannot be None.')        
         key = Key(slot_index=slot_index, name=name)
         self.attachments[key] = attachment
 
-    def getAttachment(self, slot_index, name):
+    def get_attachment(self, slot_index, name):
         key = Key(slot_index=slot_index, name=name)
         if key in self.attachments:
             return self.attachments[key]
         return None
             
-    def attachAll(self, skeleton, oldSkin):
-        for key, attachment in self.attachments.iteritems():
-            slot = skeleton.slots[key.slotIndex]
-            if skeleton.slots[key.slotIndex].attachment == attachment:
-                newAttachment = self.getAttachment(key.slotIndex, key.name)
-                if newAttachment:
-                    skeleton.slots[key.slotIndex].setAttachment(newAttachment)
+    def attach_all(self, skeleton, oldSkin):
+        for key, attachment in self.attachments.items():
+            slot = skeleton.slots[key.slot_index]
+            if skeleton.slots[key.slot_index].attachment == attachment:
+                new_attachment = self.get_attachment(key.slot_index, key.name)
+                if new_attachment:
+                    skeleton.slots[key.slot_index].set_attachment(new_attachment)
     @classmethod
     def build_from(cls, slot_map, skin_name, skeleton_data, scale, attachment_loader):
         skin_spec = cls(skin_name)
         for (slot_name, attachments_map) in slot_map.items():
-            slotIndex = skeleton_data.find_slot_index(slot_name)
+            slot_index = skeleton_data.find_slot_index(slot_name)
 
             for attach_name, attach_map in attachments_map.items():
                 attachment = attachment_loader.new_from(attach_name, attach_map, scale)                      
-                skin_spec.addAttachment(slotIndex, attach_name, attachment)
+                skin_spec.add_attachment(slot_index, attach_name, attachment)
         if skin_name == 'default':
             skeleton_data.default_skin = skin_spec
