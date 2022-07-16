@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import cProfile
 import os
 import pygame
 import spine3 
@@ -22,39 +23,47 @@ def main():
         spine3.attachment_loader.AttachmentLoader(atlas)
     )
     flyingAnimation = skeleton.data.find_animation('flying')
-    skeleton.debug = False
 
     skeleton.set_to_bind_pose()
     skeleton.x = 500
     skeleton.y = 420
-    skeleton.flipX = False
-    skeleton.flipY = False
-    skeleton.update_world_transform()
 
     clock = pygame.time.Clock()    
     animationTime = 0.0
 
     done = False
-
-    while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                done = True
-            elif event.type == pygame.KEYDOWN:
-                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    done = True
-        clock.tick(0)
-        animationTime += clock.get_time() / 1000.0
-        flyingAnimation.apply(skeleton=skeleton,
-                              time=animationTime,
-                              loop=True)
-        skeleton.update_world_transform()
-        screen.fill((0, 0, 0))
-        skeleton.draw(screen)
-        pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')
-        pygame.display.flip()
-    pygame.quit()
+    import cProfile
+    pr = cProfile.Profile()
+    try:
+        while not done:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    break
+                elif event.type == pygame.KEYDOWN:
+                    if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                        break
+            clock.tick(0)
+            animationTime += clock.get_time() / 1000.0
+            pr.enable()
+            cProfile.label("Start apply")
+            flyingAnimation.apply(
+                skeleton=skeleton,
+                time=animationTime,
+                loop=True
+            )
+            cProfile.label("world transform")
+            skeleton.update_world_transform()
+            pr.disable()
+            screen.fill((0, 0, 0))
+            pr.enable()
+            cProfile.label("draw skeleton")
+            skeleton.draw(screen)
+            pr.disable()
+            pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')
+            pygame.display.flip()
+    finally:
+        pr.print_stats("tottime")
 
 if __name__ == '__main__':
     main()

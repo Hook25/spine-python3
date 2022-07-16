@@ -1,22 +1,25 @@
 import math
 
 class CurveTimeline:
-    def __init__(self, key_frame_count):
+    def __init__(self, keyframeCount):
         self.FRAME_SPACING = 6
         self.LINEAR = 0
         self.STEPPED = -1
         self.BEZIER_SEGMENTS = 10.0
-        self.curves = [0] * ((key_frame_count - 1) * 6)
+        self.curves = [0] * ((keyframeCount - 1) * 6)
 
-    def set_linear(self, key_frame_index):
-        self.curves[key_frame_index * self.FRAME_SPACING] = self.LINEAR
-        self.curves[key_frame_index * 6] = self.LINEAR
 
-    def set_stepped(self, key_frame_index):
-        self.curves[key_frame_index * self.FRAME_SPACING] = self.STEPPED
-        self.curves[key_frame_index * 6] = self.STEPPED
+    def set_linear(self, keyframe_index):
+        self.curves[keyframe_index * self.FRAME_SPACING] = self.LINEAR
+        self.curves[keyframe_index * 6] = self.LINEAR
 
-    def set_curve(self, key_frame_index, cx1, cy1, cx2, cy2):
+
+    def set_stepped(self, keyframe_index):
+        self.curves[keyframe_index * self.FRAME_SPACING] = self.STEPPED
+        self.curves[keyframe_index * 6] = self.STEPPED
+
+    
+    def set_curve(self, keyframe_index, cx1, cy1, cx2, cy2):
         subdiv_step = 1.0 / self.BEZIER_SEGMENTS
         subdiv_step2 = subdiv_step * subdiv_step
         subdiv_step3 = subdiv_step2 * subdiv_step
@@ -28,7 +31,7 @@ class CurveTimeline:
         tmp1y = -cy1 * 2 + cy2
         tmp2x = (cx1 - cx2) * 3 + 1
         tmp2y = (cy1 - cy2) * 3 + 1
-        i = key_frame_index * 6
+        i = keyframe_index * 6
         self.curves[i] = cx1 * pre1 + tmp1x * pre2 + tmp2x * subdiv_step3
         self.curves[i + 1] = cy1 * pre1 + tmp1y * pre2 + tmp2y * subdiv_step3
         self.curves[i + 2] = tmp1x * pre4 + tmp2x * pre5
@@ -36,20 +39,21 @@ class CurveTimeline:
         self.curves[i + 4] = tmp2x * pre5
         self.curves[i + 5] = tmp2y * pre5
 
-    def get_curve_percent(self, key_frame_index, percent):
-        curve_index = key_frame_index * self.FRAME_SPACING
-        curve_index = key_frame_index * 6
-        curve_index = int(curve_index)
-        dfx = self.curves[curve_index]
+
+    def get_curve_percent(self, keyframe_index, percent):
+        curveIndex = keyframe_index * self.FRAME_SPACING
+        curveIndex = keyframe_index * 6
+        curveIndex = int(curveIndex)
+        dfx = self.curves[curveIndex]
         if dfx == self.LINEAR:
             return percent
         if dfx == self.STEPPED:
             return 0.0
-        dfy = self.curves[curve_index + 1]
-        ddfx = self.curves[curve_index + 2]
-        ddfy = self.curves[curve_index + 3]
-        dddfx = self.curves[curve_index + 4]
-        dddfy = self.curves[curve_index + 5]
+        dfy = self.curves[curveIndex + 1]
+        ddfx = self.curves[curveIndex + 2]
+        ddfy = self.curves[curveIndex + 3]
+        dddfx = self.curves[curveIndex + 4]
+        dddfy = self.curves[curveIndex + 5]
         x = dfx
         y = dfy
         i = self.BEZIER_SEGMENTS - 2
@@ -72,10 +76,10 @@ class CurveTimeline:
 
 def binary_search(values, target, step):
     low = 0
-    high = int(math.floor(len(values) / step - 2))
+    high = int(len(values) / step - 2)
     if high == 0:
         return step
-    current = int(math.floor(high >> 1))
+    current = int(high >> 1)
     while True:
         if values[(current + 1) * step] <= target:
             low = current + 1
@@ -88,12 +92,12 @@ def binary_search(values, target, step):
 
 
 class RotateTimeline(CurveTimeline):
-    def __init__(self, key_frame_count):
-        super().__init__(key_frame_count)
+    def __init__(self, keyframeCount):
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -2
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_VALUE = 1
-        self.frames = [0.0] * (key_frame_count * self.FRAME_SPACING)
+        self.frames = [0.0] * (keyframeCount * self.FRAME_SPACING)
         self.bone_index = 0
         
     
@@ -105,10 +109,10 @@ class RotateTimeline(CurveTimeline):
         return len(self.frames) / self.FRAME_SPACING
 
 
-    def set_keyframe(self, key_frame_index, time, value):
-        key_frame_index *= self.FRAME_SPACING
-        self.frames[key_frame_index] = time
-        self.frames[key_frame_index + 1] = value
+    def set_keyframe(self, keyframe_index, time, value):
+        keyframe_index *= self.FRAME_SPACING
+        self.frames[keyframe_index] = time
+        self.frames[keyframe_index + 1] = value
 
 
     def apply(self, skeleton, time, alpha):
@@ -148,34 +152,29 @@ class RotateTimeline(CurveTimeline):
         while amount < -180:
             amount = amount + 360
         bone.rotation = bone.rotation + amount * alpha
-        return 
 
 
 class TranslateTimeline(CurveTimeline):
-    def __init__(self, key_frame_count):
-        super().__init__(key_frame_count)
+    def __init__(self, keyframeCount):
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -3
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_X = 1
         self.FRAME_Y = 2
-        self.frames = [0.0] * (key_frame_count * self.FRAME_SPACING)
+        self.frames = [0.0] * (keyframeCount * self.FRAME_SPACING)
         self.bone_index = 0
-
         
     def get_duration(self):
         return self.frames[self.LAST_FRAME_TIME]
 
-
     def get_keyframe_count(self):
         return len(self.frames) / self.FRAME_SPACING
 
-
-    def set_keyframe(self, key_frame_index, time, x, y):
-        key_frame_index = key_frame_index * self.FRAME_SPACING
-        self.frames[key_frame_index] = time
-        self.frames[key_frame_index + 1] = x
-        self.frames[key_frame_index + 2] = y
-
+    def set_keyframe(self, keyframe_index, time, x, y):
+        keyframe_index = keyframe_index * self.FRAME_SPACING
+        self.frames[keyframe_index] = time
+        self.frames[keyframe_index + 1] = x
+        self.frames[keyframe_index + 2] = y
 
     def apply(self, skeleton, time, alpha):
         if time < self.frames[0]: # Time is before the first frame
@@ -204,13 +203,12 @@ class TranslateTimeline(CurveTimeline):
         bone.y = bone.y + (bone.data.y + last_frame_y + (self.frames[frame_index + self.FRAME_Y] - last_frame_y) * percent - bone.y) * alpha
 
 class ScaleTimeline(TranslateTimeline):
-    def __init__(self, key_frame_count):
-        super().__init__(key_frame_count)
+    def __init__(self, keyframeCount):
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -3
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_X = 1
         self.FRAME_Y = 2
-
 
     def apply(self, skeleton, time, alpha):
         if time < self.frames[0]:
@@ -238,17 +236,19 @@ class ScaleTimeline(TranslateTimeline):
         bone.scale_y += (bone.data.scale_y - 1 + last_frame_y + (self.frames[frame_index + self.FRAME_Y] - last_frame_y) * percent - bone.scale_y) * alpha
         return 
 
+
 class ColorTimeline(CurveTimeline):
-    def __init__(self, key_frame_count):
-        super().__init__(key_frame_count)
+    def __init__(self, keyframeCount):
+        super().__init__(keyframeCount)
         self.LAST_FRAME_TIME = -5
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
         self.FRAME_R = 1
         self.FRAME_G = 2
         self.FRAME_B = 3
         self.FRAME_A = 4
-        self.frames = [0] * (key_frame_count * self.FRAME_SPACING)
+        self.frames = [0] * (keyframeCount * self.FRAME_SPACING)
         self.slot_index = 0
+
         
     def get_duration(self):
         return self.frames[self.LAST_FRAME_TIME]
@@ -258,13 +258,13 @@ class ColorTimeline(CurveTimeline):
         return len(self.frames) / self.FRAME_SPACING
 
 
-    def set_keyframe(self, key_frame_index, time, r, g, b, a):
-        key_frame_index *= self.FRAME_SPACING
-        self.frames[key_frame_index] = time
-        self.frames[key_frame_index + 1] = r
-        self.frames[key_frame_index + 2] = g
-        self.frames[key_frame_index + 3] = b
-        self.frames[key_frame_index + 4] = a
+    def set_keyframe(self, keyframe_index, time, r, g, b, a):
+        keyframe_index *= self.FRAME_SPACING
+        self.frames[keyframe_index] = time
+        self.frames[keyframe_index + 1] = r
+        self.frames[keyframe_index + 2] = g
+        self.frames[keyframe_index + 3] = b
+        self.frames[keyframe_index + 4] = a
 
 
     def apply(self, skeleton, time, alpha):
@@ -283,10 +283,10 @@ class ColorTimeline(CurveTimeline):
         
         # Interpolate between the last frame and the current frame.
         frame_index = binary_search(self.frames, time, self.FRAME_SPACING)
-        last_frame_r = self.frames[frame_index - 4]
-        last_frame_g = self.frames[frame_index - 3]
-        last_frame_b = self.frames[frame_index - 2]
-        last_frame_a = self.frames[frame_index - 1]
+        lastFrameR = self.frames[frame_index - 4]
+        lastFrameG = self.frames[frame_index - 3]
+        lastFrameB = self.frames[frame_index - 2]
+        lastFrameA = self.frames[frame_index - 1]
         frame_time = self.frames[frame_index]
         percent = 1 - (time - frame_time) / (self.frames[frame_index + self.LAST_FRAME_TIME] - frame_time)
         if percent < 0.0:
@@ -295,10 +295,10 @@ class ColorTimeline(CurveTimeline):
             percent = 255
         percent = self.get_curve_percent(frame_index / self.FRAME_SPACING - 1, percent)
 
-        r = last_frame_r + (self.frames[frame_index + self.FRAME_R] - last_frame_r) * percent
-        g = last_frame_g + (self.frames[frame_index + self.FRAME_G] - last_frame_g) * percent
-        b = last_frame_b + (self.frames[frame_index + self.FRAME_B] - last_frame_b) * percent
-        a = last_frame_a + (self.frames[frame_index + self.FRAME_A] - last_frame_a) * percent
+        r = lastFrameR + (self.frames[frame_index + self.FRAME_R] - lastFrameR) * percent
+        g = lastFrameG + (self.frames[frame_index + self.FRAME_G] - lastFrameG) * percent
+        b = lastFrameB + (self.frames[frame_index + self.FRAME_B] - lastFrameB) * percent
+        a = lastFrameA + (self.frames[frame_index + self.FRAME_A] - lastFrameA) * percent
         if alpha < 1:
             slot.r += (r - slot.r) * alpha
             slot.g += (g - slot.g) * alpha
@@ -311,24 +311,24 @@ class ColorTimeline(CurveTimeline):
             slot.a = a
         return 
 
+
 class AttachmentTimeline:
-    def __init__(self, key_frame_count):
+    def __init__(self, keyframeCount):
         self.LAST_FRAME_TIME = -1
         self.FRAME_SPACING = -self.LAST_FRAME_TIME
-        self.frames = [0.0] * key_frame_count
-        self.attachmentNames = [None] * key_frame_count
+        self.frames = [0.0] * keyframeCount
+        self.attachment_names = [None] * keyframeCount
         self.slot_index = 0
     
     def get_duration(self):
         return self.frames[self.LAST_FRAME_TIME]
 
-
     def get_keyframe_count(self):
-        return len(self.frames)
+        len(self.frames)
 
-    def set_keyframe(self, key_frame_index, time, attachment_name):
-        self.frames[key_frame_index] = time
-        self.attachmentNames[key_frame_index] = attachment_name
+    def set_keyframe(self, keyframe_index, time, attachmentName):
+        self.frames[keyframe_index] = time
+        self.attachment_names[keyframe_index] = attachmentName
 
     def apply(self, skeleton, time, alpha):
         if time < self.frames[0]: # Time is before first frame            
@@ -339,5 +339,9 @@ class AttachmentTimeline:
             frame_index = self.LAST_FRAME_TIME
         else:
             frame_index = binary_search(self.frames, time, self.FRAME_SPACING) - 1
-        attachment_name = self.attachmentNames[frame_index]
-        skeleton.slots[self.slot_index].set_attachment(skeleton.get_attachment_by_index(self.slot_index, attachment_name))        
+        attachmentName = self.attachment_names[frame_index]
+        skeleton.slots[self.slot_index].set_attachment(skeleton.get_attachment_by_index(self.slot_index, attachmentName))        
+        return 
+
+
+

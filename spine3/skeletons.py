@@ -66,7 +66,7 @@ class Skeleton:
         if not self.data:
             raise ValueError('skeleton_data can not be null.')
 
-        self.bones = self._build_bones(self.data.bones)
+        self.bones : list[Bone] = self._build_bones(self.data.bones)
         self.slots = self._build_slots(self.data.slots, self.data.bones)
         self.ordered_drawables = [
             slot for slot in self.slots 
@@ -137,7 +137,8 @@ class Skeleton:
                 int(old_scale[0] * x_scale), 
                 int(old_scale[1] * y_scale)
             )
-            texture = pygame.transform.flip(texture, flip_x, flip_y)
+            if flip_x or flip_y:
+                texture = pygame.transform.flip(texture, flip_x, flip_y)
             texture = pygame.transform.scale(texture, act_scale)
             texture = pygame.transform.rotate(texture, -rotation)
 
