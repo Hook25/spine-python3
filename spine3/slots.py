@@ -17,7 +17,7 @@ class SlotData:
     def build_from(cls, slot_map, skeleton_data):
         slot_name = slot_map['name']
         bone_name = slot_map['bone']
-        bone_data = skeleton_data.findBone(bone_name)
+        bone_data = skeleton_data.find_bone(bone_name)
 
         slot_data = cls(name=slot_name, bone_data=bone_data)
             
@@ -81,6 +81,6 @@ class Slot:
 
     def setToBindPoseWithIndex(self, slotIndex):
         self.setColor(self.data.r, self.data.g, self.data.b, self.data.a)
-        self.setAttachment(self.skeleton.getAttachmentByIndex(slotIndex, self.data.attachmentName) if self.data.attachmentName else None)
+        self.setAttachment(self.skeleton.get_attachment_by_index(slotIndex, self.data.attachmentName) if self.data.attachmentName else None)
     
     

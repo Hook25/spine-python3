@@ -15,7 +15,7 @@ class BoneData:
     def build_from(cls, json_dct : dict, scale : float, sketon_data):
         to_r = cls(name=json_dct['name'])
         if 'parent' in json_dct:
-            to_r.parent = sketon_data.findBone(json_dct['parent'])
+            to_r.parent = sketon_data.find_bone(json_dct['parent'])
             if not to_r.parent:
                 raise Exception('Parent bone not found: %s' % json_dct['name'])
 
@@ -48,6 +48,10 @@ class Bone:
         self.line = None
         self.circle = None
 
+    @property
+    def name(self):
+        return self.data.name
+
     def setToBindPose(self):
         self.x = self.data.x
         self.y = self.data.y
@@ -55,7 +59,7 @@ class Bone:
         self.scaleX = self.data.scaleX
         self.scaleY = self.data.scaleY
 
-    def updateWorldTransform(self, flipX, flipY):
+    def update_world_transform(self, flipX, flipY):
         if self.parent:
             self.worldX = self.x * self.parent.m00 + self.y * self.parent.m01 + self.parent.worldX 
             self.worldY = self.x * self.parent.m10 + self.y * self.parent.m11 + self.parent.worldY

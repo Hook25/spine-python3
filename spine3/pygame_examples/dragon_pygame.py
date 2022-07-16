@@ -21,7 +21,7 @@ def main():
         get_asset('dragon.json').open("r"),
         spine3.attachment_loader.AttachmentLoader(atlas)
     )
-    flyingAnimation = skeleton.data.findAnimation('flying')
+    flyingAnimation = skeleton.data.find_animation('flying')
     skeleton.debug = False
 
     skeleton.setToBindPose()
@@ -29,7 +29,7 @@ def main():
     skeleton.y = 420
     skeleton.flipX = False
     skeleton.flipY = False
-    skeleton.updateWorldTransform()
+    skeleton.update_world_transform()
 
     clock = pygame.time.Clock()    
     animationTime = 0.0
@@ -49,7 +49,7 @@ def main():
         flyingAnimation.apply(skeleton=skeleton,
                               time=animationTime,
                               loop=True)
-        skeleton.updateWorldTransform()
+        skeleton.update_world_transform()
         screen.fill((0, 0, 0))
         skeleton.draw(screen)
         pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')

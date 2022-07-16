@@ -32,10 +32,10 @@ class Skin:
     def build_from(cls, slot_map, skin_name, skeleton_data, scale, attachment_loader):
         skin_spec = cls(skin_name)
         for (slot_name, attachments_map) in slot_map.items():
-            slotIndex = skeleton_data.findSlotIndex(slot_name)
+            slotIndex = skeleton_data.find_slot_index(slot_name)
 
             for attach_name, attach_map in attachments_map.items():
                 attachment = attachment_loader.new_from(attach_name, attach_map, scale)                      
                 skin_spec.addAttachment(slotIndex, attach_name, attachment)
         if skin_name == 'default':
-            skeleton_data.defaultSkin = skin_spec
+            skeleton_data.default_skin = skin_spec

@@ -56,7 +56,7 @@ class Animation:
         bones = root.get('bones', {})
 
         for boneName in bones.keys():
-            boneIndex = skeleton_data.findBoneIndex(boneName)
+            boneIndex = skeleton_data.find_bone_index(boneName)
             if boneIndex == -1:
                 raise Exception('Bone not found: %s' % boneName)
             
@@ -107,7 +107,7 @@ class Animation:
         slots = root.get('slots', {})
 
         for slotName in slots.keys():
-            slotIndex = skeleton_data.findSlotIndex(slotName)
+            slotIndex = skeleton_data.find_slot_index(slotName)
             if slotIndex == -1:
                 raise Exception('Slot not found: %s' % slotName)
             

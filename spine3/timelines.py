@@ -352,7 +352,7 @@ class AttachmentTimeline:
         else:
             frameIndex = binarySearch(self.frames, time, self.FRAME_SPACING) - 1
         attachmentName = self.attachmentNames[frameIndex]
-        skeleton.slots[self.slotIndex].setAttachment(skeleton.getAttachmentByIndex(self.slotIndex, attachmentName))        
+        skeleton.slots[self.slotIndex].setAttachment(skeleton.get_attachment_by_index(self.slotIndex, attachmentName))        
         return 
 
 

@@ -17,56 +17,56 @@ class SkeletonData:
         self.slots = []
         self.skins = []
         self.animations = []
-        self.defaultSkin = None
+        self.default_skin = None
 
-    def findBone(self, boneName):
+    def find_bone(self, bone_name):
         for i, bone in enumerate(self.bones):
-            if bone.name == boneName:
+            if bone.name == bone_name:
                 return bone
-        raise ValueError("Unknown bone: %s" % boneName)
+        raise ValueError("Unknown bone: %s" % bone_name)
 
-    def findBoneIndex(self, boneName):
+    def find_bone_index(self, bone_name):
         for i, bone in enumerate(self.bones):
-            if bone.name == boneName:
+            if bone.name == bone_name:
                 return i
-        raise ValueError("Unknown bone: %s" % boneName)
+        raise ValueError("Unknown bone: %s" % bone_name)
 
-    def findSlot(self, slotName):
+    def find_slot(self, slot_name):
         for i, slot in enumerate(self.slots):
-            if slot.name == slotName:
+            if slot.name == slot_name:
                 return slot
-        raise ValueError("Unknown slot: %s" % slotName)
+        raise ValueError("Unknown slot: %s" % slot_name)
 
-    def findSlotIndex(self, slotName):
+    def find_slot_index(self, slot_name):
         for i, slot in enumerate(self.slots):
-            if slot.name == slotName:
+            if slot.name == slot_name:
                 return i
-        raise ValueError("Unknown slot: %s" % slotName)
+        raise ValueError("Unknown slot: %s" % slot_name)
 
-    def findSkin(self, skinName):
+    def find_skin(self, skinName):
         for i, skin in enumerate(self.skins):
             if skin.name == skinName:
                 return skin
         raise ValueError("Unknown skin: %s" % skinName)
 
-    def findAnimation(self, animationName):
+    def find_animation(self, animation_name):
         for i, animation in enumerate(self.animations):
-            if animation.name == animationName:
+            if animation.name == animation_name:
                 return animation
-        raise ValueError("Unknown animation: %s" % animationName)
+        raise ValueError("Unknown animation: %s" % animation_name)
 
 class Skeleton:
-    def __init__(self, skeletonData : SkeletonData):
-        self.data = skeletonData
+    def __init__(self, skeleton_data : SkeletonData):
+        self.data = skeleton_data
         self.skin = None
         self.x = 0
         self.y = 0
         self.time = 0.0
-        self.flipX = False
-        self.flipY = False
+        self.flip_x = False
+        self.flip_y = False
 
         if not self.data:
-            raise ValueError('skeletonData can not be null.')
+            raise ValueError('skeleton_data can not be null.')
 
         self.bones = self._build_bones(self.data.bones)
         self.slots = self._build_slots(self.data.slots, self.data.bones)
@@ -103,7 +103,7 @@ class Skeleton:
             )
             bone.parent = to_r[index]
         return to_r
-
+        
     def draw(self, screen):
         import pygame
         to_draw = []
@@ -116,21 +116,21 @@ class Skeleton:
             x_scale = slot.bone.worldScaleX + slot.attachment.scaleX - 1
             y_scale = slot.bone.worldScaleY + slot.attachment.scaleY - 1
 
-            if self.flipX:
+            if self.flip_x:
                 x_scale = -x_scale
                 rotation = -rotation
-            if self.flipY:
+            if self.flip_y:
                 y_scale = -y_scale
                 rotation = -rotation
 
-            flipX = False
-            flipY = False
+            flip_x = False
+            flip_y = False
 
             if x_scale < 0:
-                flipX = True
+                flip_x = True
                 x_scale = math.fabs(x_scale)
             if y_scale < 0:
-                flipY = True
+                flip_y = True
                 y_scale = math.fabs(y_scale)
             
             texture : pygame.Surface = slot.attachment.texture
@@ -139,7 +139,7 @@ class Skeleton:
                 int(old_scale[0] * x_scale), 
                 int(old_scale[1] * y_scale)
             )
-            texture = pygame.transform.flip(texture, flipX, flipY)
+            texture = pygame.transform.flip(texture, flip_x, flip_y)
             texture = pygame.transform.scale(texture, act_scale)
             texture = pygame.transform.rotate(texture, -rotation)
 
@@ -148,87 +148,85 @@ class Skeleton:
             x -= cx
             y -= cy
             to_draw.append((texture, (x, y)))
-
         screen.blits(to_draw)
 
-    def updateWorldTransform(self):
+    def update_world_transform(self):
         for bone in self.bones:
-            bone.updateWorldTransform(self.flipX, self.flipY)
+            bone.update_world_transform(self.flip_x, self.flip_y)
 
     def setToBindPose(self):
-        self.setBonesToBindPose()
-        self.setSlotsToBindPose()
+        self.set_bones_to_bind_pose()
+        self.set_slots_to_bind_pose()
 
-    def setBonesToBindPose(self):
+    def set_bones_to_bind_pose(self):
         for bone in self.bones:
             bone.setToBindPose()
 
-    def setSlotsToBindPose(self):
+    def set_slots_to_bind_pose(self):
         for i, slot in enumerate(self.slots):
             slot.setToBindPoseWithIndex(i)
 
-    def getRootBone(self):
-        if len(self.bones):
-            return self.bones[0]
-        return None
-
-    def setRootBone(self, bone):
+    def get_root_bone(self):
+        return self.bones[0]
+        
+    def set_root_bone(self, bone):
         if len(self.bones):
             self.bones[0] = bone
     
-    def findBone(self, boneName):
+    def find_bone(self, bone_name):
         for i, bone in enumerate(self.bones):
-            if self.data.bones[i].name == boneName:
+            if self.data.bones[i].name == bone_name:
                 return self.bones[i]
         return None
 
-    def findBoneIndex(self, boneName):
+    def find_bone_index(self, bone_name):
         for i, bone in enumerate(self.bones):
-            if self.data.bones[i].name == boneName:
+            if self.data.bones[i].name == bone_name:
                 return i
         return -1
 
-    def findSlot(self, slotName):
+    def find_slot(self, slot_name):
         for i, slot in enumerate(self.slots):
-            if self.data.slots[i].name == slotName:
+            if self.data.slots[i].name == slot_name:
                 return self.slots[i]
         return None
 
-    def findSlotIndex(self, slotName):
+    def find_slot_index(self, slot_name):
         for i, slot in enumerate(self.slots):
-            if self.data.slots[i].name == slotName:
+            if self.data.slots[i].name == slot_name:
                 return i
         return -1
 
-    def setSkin(self, skinName):
-        skin = self.data.findSkin(skinName)
+    def set_skin(self, skinName):
+        skin = self.data.find_skin(skinName)
         if not skin:
             raise Exception('Skin not found: %s' % skinName)
-        self.setSkinToSkin(skin)
+        self.set_skin_to_skin(skin)
 
-    def setSkinToSkin(self, newSkin):
-        if self.skin and newSkin:
-            newSkin.attachAll(self, self.skin)
-        self.skin = newSkin
+    def set_skin_to_skin(self, new_skin):
+        if self.skin and new_skin:
+            new_skin.attachAll(self, self.skin)
+        self.skin = new_skin
 
-    def getAttachmentByName(self, slotName, attachmentName):
-        return self.getAttachmentByIndex(self.data.findSlotIndex(slotName), attachmentName)
+    def get_attachment_by_name(self, slot_name, attachment_name):
+        return self.get_attachment_by_index(self.data.find_slot_index(slot_name), attachment_name)
 
-    def getAttachmentByIndex(self, slotIndex, attachmentName):
-        if self.data.defaultSkin:
-            attachment = self.data.defaultSkin.getAttachment(slotIndex, attachmentName)
+    def get_attachment_by_index(self, slot_index, attachment_name):
+        if self.data.default_skin:
+            attachment = self.data.default_skin.getAttachment(slot_index, attachment_name)
             if attachment:
                 return attachment
         if self.skin:
-            return self.skin.getAttachment(slotIndex, attachmentName)
+            return self.skin.getAttachment(slot_index, attachment_name)
+        breakpoint()
         return None
 
-    def setAttachment(self, slotName, attachmentName):
+    def set_attachment(self, slot_name, attachment_name):
         for i in range(len(self.slots)):
-            if self.slots[i].data.name == slotName:
-                self.slots[i].setAttachment(self.getAttachmentByIndex(i, attachmentName))
+            if self.slots[i].data.name == slot_name:
+                self.slots[i].set_attachment(self.get_attachment_by_index(i, attachment_name))
                 return
-        raise Exception('Slot not found: %s' % slotName)
+        raise Exception('Slot not found: %s' % slot_name)
 
     def update(self, delta):
         self.time += delta
