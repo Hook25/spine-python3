@@ -3,6 +3,14 @@ from enum import Enum, auto
 
 FrameInfo = namedtuple("FrameInfo", ["time", "data"])
 
+def binary_search(values, target):
+    import bisect
+    idx =  bisect.bisect_left(values, target, key=lambda x: x.time)
+    return idx
+
+def mod_m180_p180(val):
+    return (val + 180) % 360 - 180
+    
 class BezierCurveData:
     BEZIER_SEGMENTS = 10.0
     def __init__(self, curve = []):
@@ -82,14 +90,6 @@ class CurveTimeline:
     def get_curve_percent(self, keyframe_index, percent):
         curve = self.curves[keyframe_index]
         return curve.interpolate(percent)
-
-def binary_search(values, target):
-    import bisect
-    idx =  bisect.bisect_left(values, target, key=lambda x: x.time)
-    return idx
-
-def mod_m180_p180(val):
-    return (val + 180) % 360 - 180
 
 class RotateTimeline(CurveTimeline):
     def __init__(self, keyframeCount):
@@ -214,7 +214,6 @@ class ScaleTimeline(TranslateTimeline):
         bone.scale_y += (
             bone.data.scale_y - 1 + last_frame_y + (self.frames[frame_index].data.y - last_frame_y) * percent - bone.scale_y
         ) * alpha
-        return 
 
 class ColorTimeline(CurveTimeline):
     def __init__(self, keyframeCount):
@@ -314,4 +313,3 @@ class AttachmentTimeline:
             frame_index = binary_search(self.frames, time)
         attachmentName = self.frames[frame_index].data
         skeleton.slots[self.slot_index].set_attachment(skeleton.get_attachment_by_index(self.slot_index, attachmentName))        
-        return 
