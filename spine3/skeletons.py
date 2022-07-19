@@ -66,9 +66,6 @@ class Skeleton:
         self.flip_y = False
         self.rotation_accuracy = rotation_accuracy
 
-        if not self.data:
-            raise ValueError('skeleton_data can not be null.')
-
         self.bones : list[Bone] = self._build_bones(self.data.bones)
         self.slots = self._build_slots(self.data.slots, self.data.bones)
         self.ordered_drawables = [
@@ -150,8 +147,6 @@ class Skeleton:
             
             texture : pygame.Surface = slot.attachment.texture
 
-            if flip_x or flip_y:
-                texture = pygame.transform.flip(texture, flip_x, flip_y)
             if rotation != 0:
                 texture = self._rotate(
                     texture, 
@@ -165,7 +160,9 @@ class Skeleton:
             )
             texture = self._scale(texture, scale_x, scale_y)
 
-
+            if flip_x or flip_y:
+                texture = pygame.transform.flip(texture, flip_x, flip_y)
+                
             # Center image
             cx, cy = texture.get_rect().center
             x = self.x + slot.bone.world_x + local_x
