@@ -68,11 +68,14 @@ class Skeleton:
 
         self.bones : list[Bone] = self._build_bones(self.data.bones)
         self.slots = self._build_slots(self.data.slots, self.data.bones)
-        self.ordered_drawables = [
+        self.ordered_drawables = self.get_ordered_drawables()
+
+    def get_ordered_drawables(self):
+        return [
             slot for slot in self.slots 
                 if slot.attachment and slot.attachment.texture
         ]
-    
+
     def _build_slots(self, slots_data, bones_data):
         to_r = []
         for slot_data in slots_data:
@@ -226,9 +229,9 @@ class Skeleton:
         self.set_skin_to_skin(skin)
 
     def set_skin_to_skin(self, new_skin):
-        if self.skin and new_skin:
-            new_skin.attachAll(self, self.skin)
+        new_skin.attach_all(self)
         self.skin = new_skin
+        self.ordered_drawables = self.get_ordered_drawables()
 
     def get_attachment_by_name(self, slot_name, attachment_name):
         return self.get_attachment_by_index(self.data.find_slot_index(slot_name), attachment_name)
