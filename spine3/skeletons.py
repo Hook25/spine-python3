@@ -45,7 +45,6 @@ class SkeletonData:
 
     def find_skin(self, skinName) -> skin.Skin:
         for i, skin in enumerate(self.skins):
-            breakpoint()
             if skin.name == skinName:
                 return skin
         raise ValueError("Unknown skin: %s" % skinName)
