@@ -1,6 +1,8 @@
 import math
 import json
 import typing
+import pygame
+from functools import cache
 
 from .bone import Bone
 from .slots import Slot
@@ -54,7 +56,7 @@ class SkeletonData:
         raise ValueError("Unknown animation: %s" % animation_name)
 
 class Skeleton:
-    def __init__(self, skeleton_data : SkeletonData):
+    def __init__(self, skeleton_data : SkeletonData, rotation_accuracy = 1):
         self.data = skeleton_data
         self.skin = None
         self.x = 0
@@ -62,6 +64,7 @@ class Skeleton:
         self.time = 0.0
         self.flip_x = False
         self.flip_y = False
+        self.rotation_accuracy = rotation_accuracy
 
         if not self.data:
             raise ValueError('skeleton_data can not be null.')
@@ -101,15 +104,29 @@ class Skeleton:
             )
             bone.parent = to_r[index]
         return to_r
-        
+    
+    @cache
+    def _rotate(self, texture, angle):
+        return pygame.transform.rotate(texture, -angle)
+
+    @cache
+    def _scale(self, texture, scale_x, scale_y):
+        return pygame.transform.scale(texture, (scale_x, scale_y))
+
+    def _accurate(self, i, accuracy):
+        return int(i * accuracy) / accuracy
+    
     def draw(self, screen):
         import pygame
         to_draw = []
         for slot in self.ordered_drawables:
-            x = self.x + slot.bone.world_x + slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
-            y = self.y - (slot.bone.world_y + slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11)
+            local_x = slot.attachment.x * slot.bone.m00 + slot.attachment.y * slot.bone.m01
+            local_y = slot.attachment.x * slot.bone.m10 + slot.attachment.y * slot.bone.m11
 
-            rotation = -(slot.bone.world_rotation + slot.attachment.rotation)
+            rotation = self._accurate(
+                -(slot.bone.world_rotation + slot.attachment.rotation),
+                self.rotation_accuracy
+            )
 
             x_scale = slot.bone.world_scale_x + slot.attachment.scale_x - 1
             y_scale = slot.bone.world_scale_y + slot.attachment.scale_y - 1
@@ -132,18 +149,27 @@ class Skeleton:
                 y_scale = math.fabs(y_scale)
             
             texture : pygame.Surface = slot.attachment.texture
+
+            if flip_x or flip_y:
+                texture = pygame.transform.flip(texture, flip_x, flip_y)
+            if rotation != 0:
+                texture = self._rotate(
+                    texture, 
+                    rotation
+                )
+            
             old_scale = texture.get_size()
-            act_scale = (
+            scale_x, scale_y =  (
                 int(old_scale[0] * x_scale), 
                 int(old_scale[1] * y_scale)
             )
-            if flip_x or flip_y:
-                texture = pygame.transform.flip(texture, flip_x, flip_y)
-            texture = pygame.transform.scale(texture, act_scale)
-            texture = pygame.transform.rotate(texture, -rotation)
+            texture = self._scale(texture, scale_x, scale_y)
+
 
             # Center image
             cx, cy = texture.get_rect().center
+            x = self.x + slot.bone.world_x + local_x
+            y = self.y - (slot.bone.world_y + local_y)
             x -= cx
             y -= cy
             to_draw.append((texture, (x, y)))

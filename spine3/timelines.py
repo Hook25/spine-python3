@@ -1,7 +1,7 @@
+import bisect
+
 def binary_search(values, target):
-    import bisect
-    idx =  bisect.bisect_left(values, target, key=lambda x: x.time)
-    return idx
+    return bisect.bisect_left(values, target, key=lambda x: x.time)
 
 def mod_m180_p180(val):
     return (val + 180) % 360 - 180
