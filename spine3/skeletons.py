@@ -19,37 +19,38 @@ class SkeletonData:
         self.animations = []
         self.default_skin = None
 
-    def find_bone(self, bone_name):
+    def find_bone(self, bone_name) -> Bone:
         for i, bone in enumerate(self.bones):
             if bone.name == bone_name:
                 return bone
         raise ValueError("Unknown bone: %s" % bone_name)
 
-    def find_bone_index(self, bone_name):
+    def find_bone_index(self, bone_name) -> int:
         for i, bone in enumerate(self.bones):
             if bone.name == bone_name:
                 return i
         raise ValueError("Unknown bone: %s" % bone_name)
 
-    def find_slot(self, slot_name):
+    def find_slot(self, slot_name) -> Slot:
         for i, slot in enumerate(self.slots):
             if slot.name == slot_name:
                 return slot
         raise ValueError("Unknown slot: %s" % slot_name)
 
-    def find_slot_index(self, slot_name):
+    def find_slot_index(self, slot_name) -> int:
         for i, slot in enumerate(self.slots):
             if slot.name == slot_name:
                 return i
         raise ValueError("Unknown slot: %s" % slot_name)
 
-    def find_skin(self, skinName):
+    def find_skin(self, skinName) -> skin.Skin:
         for i, skin in enumerate(self.skins):
+            breakpoint()
             if skin.name == skinName:
                 return skin
         raise ValueError("Unknown skin: %s" % skinName)
 
-    def find_animation(self, animation_name):
+    def find_animation(self, animation_name) -> animation.Animation:
         for i, animation in enumerate(self.animations):
             if animation.name == animation_name:
                 return animation
