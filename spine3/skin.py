@@ -14,6 +14,10 @@ class Skin:
     def get_attachment(self, slot_index, name):
         key = Key(slot_index=slot_index, name=name)
         return self.attachments[key]
+        
+    def attach_all(self, skeleton):
+        for key, attachment in self.attachments.items():
+            skeleton.slots[key.slot_index].set_attachment(attachment)
 
     @classmethod
     def build_from(cls, slot_map, skin_name, skeleton_data, scale, attachment_loader):
