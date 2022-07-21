@@ -4,7 +4,7 @@ import pygame
 import spine3 
 from pathlib import Path
 
-from .common import pygame_boilerplate_init
+from .common import pygame_boilerplate_init, pygame_boilerplate_eventcyle
 
 data_dir = (Path(__file__) / ".." / "data").resolve()
 
