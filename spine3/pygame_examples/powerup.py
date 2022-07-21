@@ -24,13 +24,7 @@ def main():
     done = False
 
     while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                done = True
-            elif event.type == pygame.KEYDOWN:
-                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    done = True
+        done = pygame_boilerplate_eventcyle()
         clock.tick(0)
         animationTime += clock.get_time() / 1000.0
         animation.apply(

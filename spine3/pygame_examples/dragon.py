@@ -4,7 +4,7 @@ import pygame
 import spine3 
 from pathlib import Path
 
-from .common import pygame_boilerplate_init
+from .common import pygame_boilerplate_init, pygame_boilerplate_eventcyle
 
 data_dir = (Path(__file__) / ".." / "data").resolve()
 
@@ -20,13 +20,8 @@ def main():
     clock = pygame.time.Clock()    
     done = False
     while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                break
-            elif event.type == pygame.KEYDOWN:
-                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    break
+        done = pygame_boilerplate_eventcyle()
+
         clock.tick(0)
         flyingAnimation.apply(
             skeleton=skeleton,
