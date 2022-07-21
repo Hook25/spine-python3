@@ -33,7 +33,6 @@ def main():
     skeleton.updateWorldTransform()    
 
     clock = pygame.time.Clock()    
-    animationTime = 0.0
 
     done = False
 

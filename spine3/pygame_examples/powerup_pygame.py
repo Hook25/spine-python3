@@ -1,36 +1,23 @@
 #!/usr/bin/env python
 
-import os
-
 import pygame
+import spine3 
+from pathlib import Path
 
-import pyguts as spine
+from .common import pygame_boilerplate_init
+
+data_dir = (Path(__file__) / ".." / "data").resolve()
 
 def main():
-    pygame.init()
+    screen = pygame_boilerplate_init()
 
-    width, height = (640, 480)
+    skeleton = spine3.utils.autoload(data_dir, "powerup")
 
-    screen = pygame.display.set_mode((width, height))
-    screen.fill((0,0,0))
-    caption = 'PyGuts - A Pygame front-end based on the python-spine Runtime'
-    pygame.display.set_caption(caption, 'Spine Runtime')
-
-    atlas = spine.Atlas(file='./data/powerup.atlas')
-    skeletonJson = spine.SkeletonJson(spine.AtlasAttachmentLoader(atlas))
-    skeletonData = skeletonJson.readSkeletonDataFile('./data/powerup.json')
-    animation = skeletonData.findAnimation('animation')
-
-    skeleton = spine.Skeleton(skeletonData=skeletonData)
-    skeleton.debug = False
-
-    skeleton.setToBindPose()
     skeleton.x = 320
     skeleton.y = 400
-    skeleton.flipX = False
-    skeleton.flipY = False
-    skeleton.updateWorldTransform()
 
+    animation = skeleton.data.find_animation('animation')
+    
     clock = pygame.time.Clock()    
     animationTime = 0.0
 
@@ -46,13 +33,15 @@ def main():
                     done = True
         clock.tick(0)
         animationTime += clock.get_time() / 1000.0
-        animation.apply(skeleton=skeleton,
-                        time=animationTime,
-                        loop=True)
-        skeleton.updateWorldTransform()
+        animation.apply(
+            skeleton=skeleton,
+            time=animationTime,
+            loop=True
+        )
+        skeleton.update_world_transform()
         screen.fill((0, 0, 0))
-        skeleton.draw(screen, 0)
-        pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')
+        skeleton.draw(screen)
+        pygame.display.set_caption(f'Spine Runtime: FPS: {int(clock.get_fps())}')
         pygame.display.flip()
     pygame.quit()
 
