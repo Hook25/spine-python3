@@ -9,9 +9,6 @@ class Animation:
         self.duration = duration
 
     def mix(self, skeleton, time, loop, alpha):
-        if not skeleton:
-            raise Exception('Skeleton cannot be None.')
-
         if loop and self.duration:
             time %= self.duration
 

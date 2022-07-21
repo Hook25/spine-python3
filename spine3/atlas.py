@@ -1,22 +1,27 @@
+from multiprocessing.sharedctypes import Value
 import os
 from pathlib import Path
 from enum import IntEnum
 
-formatNames = ('Alpha', 
-               'Intensity',
-               'LuminanceAlpha',
-               'RGB565',
-               'RGBA4444',
-               'RGB888',
-               'RGBA8888')
+formatNames = (
+    'Alpha', 
+    'Intensity',
+    'LuminanceAlpha',
+    'RGB565',
+    'RGBA4444',
+    'RGB888',
+    'RGBA8888'
+)
 
-textureFiltureNames = ('Nearest',
-                       'Linear',
-                       'MipMap', 
-                       'MipMapNearestNearest', 
-                       'MipMapLinearNearest',
-                       'MipMapNearestLinear', 
-                       'MipMapLinearLinear')
+textureFiltureNames = (
+    'Nearest',
+    'Linear',
+    'MipMap', 
+    'MipMapNearestNearest', 
+    'MipMapLinearNearest',
+    'MipMapNearestLinear', 
+    'MipMapLinearLinear'
+)
 
 
 class Format(IntEnum):
@@ -50,144 +55,125 @@ class Atlas:
         self.loadWithFile(file)
 
     def loadWithFile(self, file):
-        if not file:
-            raise Exception('input cannot be null.')
-
-        text = None
-
-        with open(os.path.realpath(file), 'r') as fh:
+        with Path(file).open('r') as fh:
             text = fh.readlines()
         self.load(text)
 
     def load(self, text):
         page = None
-        region = None
         _page = None
         _region = {}
+        def s_rs(s): return s.strip().rstrip()
 
-
+        def get_value(line : str):
+            if "," in line:
+                return [s_rs(x) for x in line.split(",")]
+            elif line in ["false", "true"]:
+                return bool(line.capitalize())
+            return s_rs(line)
+        
         for line in text:
             value = line.strip().rstrip()
             if len(value) == 0:
                 _page = {}
                 page = None
-            if not page:
+            if page is None:
                 if not ':' in value:
-                    value = value.strip().rstrip()
+                    value = s_rs(value)
                     _page['name'] = value
                 else:
-                    (key, value) = value.split(':')
-                    key = key.strip().rstrip()
-                    value = value.strip().rstrip()
-                    if ',' in value:
-                        value = value.split(',')
-                        _page[key] = [x.strip().rstrip() for x in value]                    
-                    else:
-                        if value == 'false':
-                            value = False
-                        elif value == 'true':
-                            value = True
-                        _page[key] = value
+                    (key, value) = (s_rs(x) for x in value.split(':'))
+                    value = get_value(value)
+                    _page[key] = value
                     if key == 'repeat':
-                        page = self.newAtlasPage(_page['name'])
-                        page.format = _page['format']
-                        page.minFilter = _page['filter'][0]
-                        page.magFilter = _page['filter'][1]
-                        if _page['repeat'] == 'x':
-                            page.uWrap = TextureWrap.repeat
-                            page.vWrap = TextureWrap.clampToEdge
-                        elif _page['repeat'] == 'y':
-                            page.uWrap = TextureWrap.clampToEdge
-                            page.vWrap = TextureWrap.repeat
-                        elif _page['repeat'] == 'xy':
-                            page.uWrap = TextureWrap.repeat
-                            page.vWrap = TextureWrap.repeat
+                        path = self.file_loc / _page['name']
+                        page = AtlasPage.build_from(_page, path)              
                         self.pages.append(page)
             else:
                 if not ':' in value:
-                    value = value.strip().rstrip()
+                    value = s_rs(value)
                     _region['name'] = value
                 else:
-                    (key, value) = value.split(':')
-                    key = key.strip().rstrip()
-                    value = value.strip().rstrip()
-                    if ',' in value:
-                        value = value.split(',')
-                        _region[key] = [int(x.strip().rstrip()) for x in value]
+                    (key, value) = (s_rs(x) for x in value.split(':'))
+                    value = get_value(value)
+                    if isinstance(value, list):
+                        _region[key] = [int(x) for x in value]
                     else:
-                        if value == 'false':
-                            value = False
-                        elif value == 'true':
-                            value = True
                         _region[key] = value
                     if key == 'index':
-                        region = self.newAtlasRegion(page)
-                        region.name = _region['name']
-                        region.x = _region['xy'][0]
-                        region.y = _region['xy'][1]
-                        region.width = _region['size'][0]
-                        region.height = _region['size'][1]
-                        if 'split' in _region:
-                            region.splits.append(_region['split'][0])
-                            region.splits.append(_region['split'][1])
-                            region.splits.append(_region['split'][2])
-                            region.splits.append(_region['split'][3])
-                            if 'pad' in _region:
-                                region.pads.append(_region['pad'][0])
-                                region.pads.append(_region['pad'][1])
-                                region.pads.append(_region['pad'][2])
-                                region.pads.append(_region['pad'][3])
-                        region.originalWidth = _region['orig'][0]
-                        region.originalHeight = _region['orig'][1]
-                        region.offsetX = _region['offset'][0]
-                        region.offsetY = _region['offset'][1]
-                        region.index = int(_region['index'])
+                        region = AtlasRegion.build_from(_region, page)
                         self.regions.append(region)
                         _region = {}
-                        continue
 
     def findRegion(self, name):
         for region in self.regions:
             if region.name == name:
                 return region
-        return None
-
-    def newAtlasPage(self, name):
-        import pygame
-        page = AtlasPage()
-        img_path = self.file_loc / name
-        page.texture = pygame.image.load(img_path.resolve()).convert_alpha()
-        return page
-
-    def newAtlasRegion(self, page):
-        region = AtlasRegion()
-        region.page = page
-        return region
+        raise NameError(f"Region {name} does not exist")
 
 class AtlasRegion:
-    def __init__(self):
-        self.name = None
-        self.x = 0
-        self.y = 0
-        self.width = 0
-        self.height = 0
-        self.offsetX = 0.0
-        self.offsetY = 0.0
-        self.originalWidth = 0
-        self.originalHeight = 0
-        self.index = 0
-        self.rotate = False
+    def __init__(self, name, x, y, width, height, offset_x, offset_y, og_width, og_height, index, splits, pads, page):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.offset_x = offset_x
+        self.offset_y = offset_y
+        self.og_width = og_width
+        self.og_height = og_height
+        self.index = index
+        self.splits = splits
+        self.pads = pads
+        self.page = page
+
         self.flip = False
-        self.splits = []
-        self.pads = []
-        self.page = None
+        self.rotate = False
+    @classmethod
+    def build_from(cls, region, page):
+        name = region['name']
+        x, y= region['xy']
+        width, height = region['size']
+        splits = []
+        pads = []
+        if 'split' in region:
+            splits = region['split']
+            if 'pad' in region:
+                pads = region['pad']
+        og_width, og_height = region['orig']
+        offset_x, offset_y = region['offset']
+        index = int(region['index'])
+        return cls(name, x, y, width, height, offset_x, offset_y, og_width, og_height, index, splits, pads, page)
 
 class AtlasPage:
-    def __init__(self):
-        self.name = None
-        self.format = None
-        self.minFilter = None
-        self.magFilter = None
-        self.uWrap = None
-        self.vWrap = None
-        self.texture = None
+    def __init__(self, name, format, min_filter, mag_filter, u_wrap, v_wrap, texture):
+        self.name = name
+        self.format = format
+        self.min_filter = min_filter
+        self.mag_filter = mag_filter
+        self.u_wrap = u_wrap
+        self.v_wrap = v_wrap
+        self.texture = texture
+    @classmethod
+    def build_from(cls, page, img_path):
+        import pygame
+        texture = pygame.image.load(img_path.resolve()).convert_alpha()
+        min_filter, mag_filter = page['filter']
+        u_wrap = TextureWrap.clampToEdge
+        v_wrap = TextureWrap.clampToEdge
+        if page['repeat'] == 'x':
+            u_wrap = TextureWrap.repeat
+        elif page['repeat'] == 'y':
+            v_wrap = TextureWrap.repeat
+        elif page['repeat'] == 'xy':
+            u_wrap = TextureWrap.repeat
+            v_wrap = TextureWrap.repeat
+        return cls(
+            name = page['name'], 
+            format = page['format'], 
+            min_filter = min_filter, 
+            mag_filter = mag_filter, 
+            u_wrap = u_wrap, 
+            v_wrap = v_wrap, 
+            texture = texture
+        )

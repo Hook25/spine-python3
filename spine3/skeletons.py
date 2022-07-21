@@ -106,11 +106,13 @@ class Skeleton:
         return to_r
     
     @cache
-    def _rotate(self, texture, angle):
+    @staticmethod
+    def _rotate(texture, angle):
         return pygame.transform.rotate(texture, -angle)
 
     @cache
-    def _scale(self, texture, scale_x, scale_y):
+    @staticmethod
+    def _scale(texture, scale_x, scale_y):
         return pygame.transform.scale(texture, (scale_x, scale_y))
 
     def _accurate(self, i, accuracy):
@@ -151,7 +153,7 @@ class Skeleton:
             texture : pygame.Surface = slot.attachment.texture
 
             if rotation != 0:
-                texture = self._rotate(
+                texture = Skeleton._rotate(
                     texture, 
                     rotation
                 )
@@ -161,7 +163,7 @@ class Skeleton:
                 int(old_scale[0] * x_scale), 
                 int(old_scale[1] * y_scale)
             )
-            texture = self._scale(texture, scale_x, scale_y)
+            texture = Skeleton._scale(texture, scale_x, scale_y)
 
             if flip_x or flip_y:
                 texture = pygame.transform.flip(texture, flip_x, flip_y)

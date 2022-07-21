@@ -30,11 +30,13 @@ def main():
     animationTime = 0.0
 
     done = False
-
+    import cProfile
+    cp = cProfile.Profile()
     while not done:
         done = pygame_boilerplate_eventcyle()
         clock.tick(0)
         animationTime += clock.get_time() / 1000.0
+        cp.enable()
         walk_animation.apply(
             skeleton=goblin,
             time=animationTime,
@@ -47,11 +49,15 @@ def main():
         )
         goblin.update_world_transform()
         goblingirl.update_world_transform()
+        cp.disable()
         screen.fill((0, 0, 0))
+        cp.enable()
         goblin.draw(screen)
         goblingirl.draw(screen)
+        cp.disable()
         pygame.display.set_caption(f'Spine Runtime: FPS: {int(clock.get_fps())}')
         pygame.display.flip()
+    cp.print_stats("cumtime")
     pygame.quit()
 
 if __name__ == '__main__':

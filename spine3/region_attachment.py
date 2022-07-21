@@ -1,10 +1,9 @@
 import math
 
-from . import attachment
-
-class BaseRegionAttachment(attachment.Attachment):
+class BaseRegionAttachment:
     def __init__(self):
         super().__init__()
+        self.name = ""
         self.x = 0.0
         self.y = 0.0
         self.scale_x = 1.0
@@ -73,7 +72,6 @@ class PyGameRegionAttachment(BaseRegionAttachment):
         self.rect = pygame.Rect((self.u, self.v, region.width, region.height))
         self.texture = region.page.texture.subsurface(self.rect)
         self.offset = pygame.Rect(0, 0, region.width, region.height)
-        self.offset.center = (region.width / 2, region.height / 2)
         if region.rotate:
             self.verticies[1].tex_coords.x = self.u
             self.verticies[1].tex_coords.y = self.v2
@@ -101,31 +99,17 @@ class PyGameRegionAttachment(BaseRegionAttachment):
         b = skeleton.b * slot.b * 255.0
         a = skeleton.a * slot.a * 255.0
 
-        self.verticies[0].color.r = r
-        self.verticies[0].color.g = g
-        self.verticies[0].color.b = b
-        self.verticies[0].color.a = a
-        self.verticies[1].color.r = r
-        self.verticies[1].color.g = g
-        self.verticies[1].color.b = b
-        self.verticies[1].color.a = a
-        self.verticies[2].color.r = r
-        self.verticies[2].color.g = g
-        self.verticies[2].color.b = b
-        self.verticies[2].color.a = a
-        self.verticies[3].color.r = r
-        self.verticies[3].color.g = g
-        self.verticies[3].color.b = b
-        self.verticies[3].color.a = a
+        for ver in self.verticies:
+            ver.color.r = r
+            ver.color.g = g
+            ver.color.b = b
+            ver.color.a = a
 
         self.update_offset()
         self.update_world_verticies(slot.bone)
 
         skeleton.texture = self.texture
-        skeleton.vertex_array.append(self.verticies[0])
-        skeleton.vertex_array.append(self.verticies[1])
-        skeleton.vertex_array.append(self.verticies[2])
-        skeleton.vertex_array.append(self.verticies[3])
+        skeleton.vertex_array += self.verticies
 
     def update_world_vertices(self, bone):
         x = bone.worldX
@@ -134,12 +118,7 @@ class PyGameRegionAttachment(BaseRegionAttachment):
         m01 = bone.m01
         m10 = bone.m10
         m11 = bone.m11
-        self.verticies[0].position.x = self.offset[0] * m00 + self.offset[1] * m01 + x
-        self.verticies[0].position.y = self.offset[0] * m10 + self.offset[1] * m11 + y
-        self.verticies[1].position.x = self.offset[2] * m00 + self.offset[3] * m01 + x
-        self.verticies[1].position.y = self.offset[2] * m10 + self.offset[3] * m11 + y
-        self.verticies[2].position.x = self.offset[4] * m00 + self.offset[5] * m01 + x
-        self.verticies[2].position.y = self.offset[4] * m10 + self.offset[5] * m11 + y
-        self.verticies[3].position.x = self.offset[6] * m00 + self.offset[7] * m01 + x
-        self.verticies[3].position.y = self.offset[6] * m10 + self.offset[7] * m11 + y
+        for i, vert in enumerate(self.verticies):
+            vert.position.x = self.offset[i] * m00 + self.offset[i+1] * m01 + x
+            vert.position.y = self.offset[i] * m10 + self.offset[i+1] * m11 + y
         

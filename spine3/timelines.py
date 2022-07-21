@@ -11,7 +11,7 @@ class SoonError(Exception): pass
 class BezierCurveData:
     BEZIER_SEGMENTS = 10.0
     def __init__(self, curve = []):
-        self.curve = curve
+        self.curve = [0 for _ in range(6 - len(curve))] +  curve
     @classmethod
     def from_points(cls, cx1, cy1, cx2, cy2):
         subdiv_step = 1.0 / cls.BEZIER_SEGMENTS
@@ -37,10 +37,10 @@ class BezierCurveData:
         )
 
     def interpolate(self, percent):
-        (dfx, dfy, ddfx, ddfy, dddfx, dddfy) = [0 for _ in range(6 - len(self.curve))] + self.curve
+        (dfx, dfy, ddfx, ddfy, dddfx, dddfy) = self.curve
         x = dfx
         y = dfy
-        i = self.BEZIER_SEGMENTS - 2
+        i = self.BEZIER_SEGMENTS 
         while True:
             if x >= percent:
                 lastX = x - dfx
