@@ -161,6 +161,7 @@ class InterpolableTimeline:
         percent = 1 - (time - curr_frame.time) / (last_frame.time - curr_frame.time) 
         percent = min(max(percent, 0), 1)
         return (curr_frame.interpolate(last_frame, percent))
+
     @staticmethod
     def read_curve(value_map : dict):
         curve = value_map.get('curve', 'linear')
@@ -173,9 +174,9 @@ class InterpolableTimeline:
         )
 
 class RotateTimeline(InterpolableTimeline):
-    def __init__(self):
+    def __init__(self, bone_index):
         super().__init__()
-        self.bone_index = 0
+        self.bone_index = bone_index
 
     @staticmethod
     def read_data(keyframe):
@@ -192,9 +193,9 @@ class RotateTimeline(InterpolableTimeline):
         bone.rotation = new_rotation
 
 class TranslateTimeline(InterpolableTimeline):
-    def __init__(self):
+    def __init__(self, bone_index):
         super().__init__()
-        self.bone_index = 0
+        self.bone_index = bone_index
         
     @staticmethod
     def read_data(keyframe):
@@ -210,8 +211,8 @@ class TranslateTimeline(InterpolableTimeline):
         bone.y = bone.y + (bone.data.y + curr[1] - bone.y) * alpha
 
 class ScaleTimeline(TranslateTimeline):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, bone_index):
+        super().__init__(bone_index)
 
     def apply(self, skeleton, time, alpha):
         curr = self.get_current(time)
@@ -222,62 +223,21 @@ class ScaleTimeline(TranslateTimeline):
         bone.scale_y = (bone.scale_y + (bone.data.scale_y - 1 + curr[1] - bone.scale_y) * alpha)
 
 class ColorTimeline(InterpolableTimeline):
-    def __init__(self):
+    def __init__(self, slot_index):
         super().__init__()
-        self.LAST_FRAME_TIME = -5
-        self.FRAME_SPACING = -self.LAST_FRAME_TIME
-        self.FRAME_R = 1
-        self.FRAME_G = 2
-        self.FRAME_B = 3
-        self.FRAME_A = 4
-        self.keyframes = [0]  #FIXME
-        self.slot_index = 0
+        self.slot_index = slot_index 
 
-        
-    def get_keyframe_count(self):
-        return len(self.keyframes) / self.FRAME_SPACING
-
-
-    def set_keyframe(self, keyframe_index, time, r, g, b, a):
-        keyframe_index *= self.FRAME_SPACING
-        self.keyframes[keyframe_index] = time
-        self.keyframes[keyframe_index + 1] = r
-        self.keyframes[keyframe_index + 2] = g
-        self.keyframes[keyframe_index + 3] = b
-        self.keyframes[keyframe_index + 4] = a
-
+    @staticmethod
+    def read_data(keyframe):
+        from .utils import Color
+        return InterpolableKeyframe.ValueList(Color.parse(keyframe["color"])) 
 
     def apply(self, skeleton, time, alpha):
-        if time < self.keyframes[0]: # Time is before first frame.
-            return 
-        
+        curr = self.get_current(time)
+
         slot = skeleton.slots[self.slot_index]
         
-        if time >= self.keyframes[self.LAST_FRAME_TIME]:      # -5
-            i = len(self.keyframes) - 1
-            slot.r = self.keyframes[i - 3] # -4
-            slot.g = self.keyframes[i - 2] # -3
-            slot.b = self.keyframes[i - 1] # -2
-            slot.a = self.keyframes[i] # -1
-        
-        # Interpolate between the last frame and the current frame.
-        frame_index = binary_search(self.keyframes, time)
-        lastFrameR = self.keyframes[frame_index - 4]
-        lastFrameG = self.keyframes[frame_index - 3]
-        lastFrameB = self.keyframes[frame_index - 2]
-        lastFrameA = self.keyframes[frame_index - 1]
-        frame_time = self.keyframes[frame_index]
-        percent = 1 - (time - frame_time) / (self.keyframes[frame_index + self.LAST_FRAME_TIME] - frame_time)
-        if percent < 0.0:
-            percent = 0.0
-        if percent > 255:
-            percent = 255
-        percent = self.interpolate(frame_index / self.FRAME_SPACING - 1, percent)
-
-        r = lastFrameR + (self.keyframes[frame_index + self.FRAME_R] - lastFrameR) * percent
-        g = lastFrameG + (self.keyframes[frame_index + self.FRAME_G] - lastFrameG) * percent
-        b = lastFrameB + (self.keyframes[frame_index + self.FRAME_B] - lastFrameB) * percent
-        a = lastFrameA + (self.keyframes[frame_index + self.FRAME_A] - lastFrameA) * percent
+        r, g, b, a =  curr
         if alpha < 1:
             slot.r += (r - slot.r) * alpha
             slot.g += (g - slot.g) * alpha
@@ -288,12 +248,11 @@ class ColorTimeline(InterpolableTimeline):
             slot.g = g
             slot.b = b
             slot.a = a
-        return 
 
 class AttachmentTimeline(InterpolableTimeline):
-    def __init__(self):
+    def __init__(self, slot_index):
         super().__init__()
-        self.slot_index = 0
+        self.slot_index = slot_index
     @staticmethod
     def read_data(keyframe):
         return InterpolableKeyframe.ValueList(keyframe["name"])
