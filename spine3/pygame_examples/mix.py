@@ -1,36 +1,22 @@
 #!/usr/bin/env python
 
-import os
-
 import pygame
+import spine3 
+from pathlib import Path
 
-import pyguts as spine
+from .common import pygame_boilerplate_eventcyle, pygame_boilerplate_init
+
+data_dir = (Path(__file__) / ".." / "data").resolve()
 
 def main():
-    pygame.init()
+    screen = pygame_boilerplate_init()
 
-    width, height = (640, 480)
+    skeleton = spine3.utils.autoload(data_dir, "spineboy")
+    walkAnimation = skeleton.data.find_animation('walk')
+    jumpAnimation = skeleton.data.find_animation('jump')
 
-    screen = pygame.display.set_mode((width, height))
-    screen.fill((0,0,0))
-    caption = 'PyGuts - A Pygame front-end based on the python-spine Runtime'
-    pygame.display.set_caption(caption, 'Spine Runtime')
-
-    atlas = spine.Atlas(file='./data/spineboy.atlas')
-    skeletonJson = spine.SkeletonJson(spine.AtlasAttachmentLoader(atlas))
-    skeletonData = skeletonJson.readSkeletonDataFile(file='./data/spineboy.json')
-    walkAnimation = skeletonData.findAnimation('walk')
-    jumpAnimation = skeletonData.findAnimation('jump')
-
-    skeleton = spine.Skeleton(skeletonData=skeletonData)
-    skeleton.debug = True
-
-    skeleton.setToBindPose()
     skeleton.x = -50
     skeleton.y = 400
-    skeleton.flipX = False
-    skeleton.flipY = False
-    skeleton.updateWorldTransform()    
 
     clock = pygame.time.Clock()    
 
@@ -39,13 +25,7 @@ def main():
     time = 0
 
     while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                done = True
-            elif event.type == pygame.KEYDOWN:
-                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    done = True
+        done = pygame_boilerplate_eventcyle()
         clock.tick(60.0)
 
         delta = clock.get_time() * 1.0
@@ -91,10 +71,10 @@ def main():
             # just walk before jump
             walkAnimation.apply(skeleton, time, True)
 
-        skeleton.updateWorldTransform()
+        skeleton.update_world_transform()
         skeleton.update(clock.get_time())
-        skeleton.draw(screen, 0)
-        pygame.display.set_caption('%s  %.2f' % (caption, clock.get_fps()), 'Spine Runtime')
+        skeleton.draw(screen)
+        pygame.display.set_caption(f'Spine Runtime: FPS: {int(clock.get_fps())}')
         pygame.display.flip()
     pygame.quit()
 
