@@ -1,5 +1,6 @@
-from msilib.schema import File
 from pathlib import Path
+
+from .containers import AnimationContainer, AutotimeAnimationContainer
 from . import atlas
 from . import skeletons
 from . import attachment_loader
@@ -37,3 +38,9 @@ def autoload(dir, name):
 	skeleton.set_to_bind_pose()
 
 	return skeleton
+
+def autoload_container(dir, name, autotime=False):
+	skeleton = autoload(dir, name)
+	if autotime:
+		return AutotimeAnimationContainer(skeleton)
+	return AnimationContainer(skeleton)

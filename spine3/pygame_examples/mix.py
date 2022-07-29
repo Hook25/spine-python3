@@ -11,9 +11,8 @@ data_dir = (Path(__file__) / ".." / "data").resolve()
 def main():
     screen = pygame_boilerplate_init()
 
-    skeleton = spine3.utils.autoload(data_dir, "spineboy")
-    walkAnimation = skeleton.data.find_animation('walk')
-    jumpAnimation = skeleton.data.find_animation('jump')
+    skeleton = spine3.utils.autoload_container(data_dir, "spineboy", autotime = False)
+    skeleton.active_animation_names = ["walk", "jump"]
 
     skeleton.x = -50
     skeleton.y = 400
@@ -32,47 +31,44 @@ def main():
 
         time += delta / 1000.00
 
-        jump = jumpAnimation.duration
-        beforeJump = 1.0
-        blendIn = 0.4
-        blendOut = 0.4
-        blendOutStart = beforeJump + jump - blendOut
+        jump = skeleton.active_animations["jump"].duration
+        before_jump = 1.0
+        blend_in = 0.4
+        blend_out = 0.4
+        blend_out_start = before_jump + jump - blend_out
         total = 3.75
 
-        root = skeleton.bones[0]
         speed = 180.0
 
-        if time > beforeJump + blendIn and time < blendOutStart:
+        if time > before_jump + blend_in and time < blend_out_start:
             speed = 360.0
 
-        root.x = root.x + speed * delta / 1000.00
+        skeleton.x = skeleton.x + speed * delta / 1000.00
         
         screen.fill((0, 0, 0))
 
         if time > total:
             # restart
             time = 0.0
-            root.x = -50.0
-        elif time > beforeJump + jump:
+            skeleton.x = -50.0
+        elif time > before_jump + jump:
             # just walk after jump
-            walkAnimation.apply(skeleton, time, True)
-        elif time > blendOutStart:
+            skeleton.animate("walk", time, True)
+        elif time > blend_out_start:
             # blend out jump
-            walkAnimation.apply(skeleton, time, True)
-            jumpAnimation.mix(skeleton, time - beforeJump, False, 1.0 - (time - blendOutStart) / blendOut)
-        elif time > beforeJump + blendIn:
+            skeleton.animate("walk", time, True)
+            skeleton.animate("jump", time - before_jump, False, 1.0 - (time - blend_out_start) / blend_out)
+        elif time > before_jump + blend_in:
             # just jump
-            jumpAnimation.apply(skeleton, time - beforeJump, False)
-        elif time > beforeJump:
+            skeleton.animate("jump", time - before_jump, False)
+        elif time > before_jump:
             # blend in jump
-            walkAnimation.apply(skeleton, time, True)
-            jumpAnimation.mix(skeleton, time - beforeJump, False, (time - beforeJump) / blendIn)
+            skeleton.animate("walk", time, True)
+            skeleton.animate("jump", time - before_jump, False, (time - before_jump) / blend_in)
         else:
             # just walk before jump
-            walkAnimation.apply(skeleton, time, True)
+            skeleton.animate("walk", time, True)
 
-        skeleton.update_world_transform()
-        skeleton.update(clock.get_time())
         skeleton.draw(screen)
         pygame.display.set_caption(f'Spine Runtime: FPS: {int(clock.get_fps())}')
         pygame.display.flip()
